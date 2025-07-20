@@ -434,12 +434,19 @@
 
         function updateClock() {
             const now = new Date();
-            document.getElementById('timeDisplay').textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            // 12-hour format with AM/PM for Eastern Time (Medford, NJ)
+            document.getElementById('timeDisplay').textContent = now.toLocaleTimeString('en-US', {
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true,
+                timeZone: 'America/New_York'
+            });
             document.getElementById('dateDisplay').textContent = now.toLocaleDateString('en-US', { 
                 weekday: 'long', 
                 year: 'numeric', 
                 month: 'long', 
-                day: 'numeric' 
+                day: 'numeric',
+                timeZone: 'America/New_York'
             });
         }
 

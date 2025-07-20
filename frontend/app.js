@@ -29,12 +29,23 @@ class LifeHub {
             document.getElementById('current-date').textContent = data.date;
         } catch (error) {
             console.error('Failed to update time:', error);
-            // Fallback to client-side time
+            // Fallback to client-side time in Eastern Time
             const now = new Date();
             document.getElementById('current-time').textContent = 
-                now.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: false});
+                now.toLocaleTimeString('en-US', {
+                    hour: 'numeric', 
+                    minute: '2-digit', 
+                    hour12: true,
+                    timeZone: 'America/New_York'
+                });
             document.getElementById('current-date').textContent = 
-                now.toLocaleDateString('en-US', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'});
+                now.toLocaleDateString('en-US', {
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    timeZone: 'America/New_York'
+                });
         }
     }
 

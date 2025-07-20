@@ -225,13 +225,18 @@ async def dashboard():
 
 @app.get("/api/time")
 async def get_time():
-    """Get current time and date"""
+    """Get current time and date in Eastern Time (Medford, NJ)"""
     try:
-        now = datetime.now()
+        from zoneinfo import ZoneInfo
+        
+        # Get current time in Eastern Time
+        et_time = datetime.now(ZoneInfo("America/New_York"))
+        
         return {
-            "time": now.strftime("%H:%M"),
-            "date": now.strftime("%A, %B %d, %Y"),
-            "timestamp": now.isoformat()
+            "time": et_time.strftime("%-I:%M %p"),  # 12-hour format with AM/PM
+            "date": et_time.strftime("%A, %B %d, %Y"),
+            "timestamp": et_time.isoformat(),
+            "timezone": "America/New_York"
         }
     except Exception as e:
         logger.error(f"Error getting time: {e}")
