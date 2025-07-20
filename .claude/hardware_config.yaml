@@ -1,0 +1,83 @@
+# Pi Life Hub Hardware Configuration
+device:
+  model: 'Raspberry Pi 5'
+  ram: '8GB'
+  storage: '64GB SD Card'
+  
+peripherals:
+  touchscreen:
+    model: '7" Official Raspberry Pi Touchscreen'
+    resolution: '800x480'
+    interface: 'DSI'
+  
+  usb_devices:
+    microphone:
+      type: 'USB Microphone'
+      brand: 'UFC'
+      interface: 'USB'
+    
+    speaker:
+      type: 'Mini USB Speaker'
+      interface: 'USB'
+    
+    nfc_reader:
+      type: 'USB NFC Reader'
+      interface: 'USB'
+      tags_available: 20
+  
+gpio_pins:
+  # Currently no GPIO pins in use - MVP uses touchscreen/USB only
+  # Future GPIO assignments will be documented here:
+  # Example format:
+  # pin_17: 'Status LED'
+  # pin_22: 'Buzzer'
+  # pin_4: 'DHT22 Temperature Sensor'
+  
+i2c_devices:
+  # No I2C devices currently connected
+  # Future I2C devices will be documented here
+  
+spi_devices:
+  # No SPI devices currently connected
+  # Future SPI devices will be documented here
+
+constraints:
+  max_cpu_temp: 70  # Celsius
+  max_memory_usage: 6144  # 6GB to leave headroom
+  max_cpu_usage: 50  # Percent
+  
+power:
+  supply: 'Official Raspberry Pi 5 Power Supply'
+  voltage: '5V'
+  current: '5A'
+  
+cooling:
+  type: 'Active Cooling Case'
+  fan_control: 'PWM'
+  
+network:
+  interface: 'Ethernet/WiFi'
+  requirements: 'Local network only for MVP'
+  
+storage_paths:
+  database: '/home/pi/pi-lifehub/lifehub.db'
+  logs: '/var/log/pi-life-hub/'
+  static_files: '/home/pi/pi-lifehub/frontend/'
+  
+service_ports:
+  backend_api: 8000
+  
+future_hardware:
+  # Planned additions for Phase 2+
+  sensors:
+    - 'DHT22 Temperature/Humidity'
+    - 'PIR Motion Sensor'
+    - 'Light Sensor'
+  
+  actuators:
+    - 'RGB Status LED'
+    - 'Buzzer for notifications'
+    
+  communication:
+    - 'Bluetooth for phone integration'
+    - 'Zigbee for smart home control'

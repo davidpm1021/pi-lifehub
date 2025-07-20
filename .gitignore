@@ -1,0 +1,111 @@
+# Pi Life Hub - Git Ignore File
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+/var/log/pi-life-hub/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+lifehub.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Pi-specific
+# GPIO state files
+gpio_state.json
+
+# Sensor calibration data (but include templates)
+sensor_calibration.json
+!sensor_calibration.template.json
+
+# Photos/media (large files)
+photos/
+media/uploads/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# SSH keys and certificates
+*.pem
+*.key
+*.crt
+id_rsa*
+known_hosts
+
+# Hardware-specific configs that vary by device
+hardware_serial.txt
+device_id.txt
+
+# Backup files
+*.bak
+*.backup
+
+# Node modules if using any frontend tools
+node_modules/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
