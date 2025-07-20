@@ -173,6 +173,7 @@
             align-items: center;
             justify-content: center;
             position: relative;
+            transition: opacity 0.5s ease-in-out;
         }
 
         .slideshow-image {
@@ -386,10 +387,10 @@
         <!-- Quick Actions -->
         <div class="widget quick-actions">
             <h3>🚀 Quick Actions</h3>
-            <button class="action-btn touch-feedback" onclick="refreshWeather()">🌡️ Refresh Weather</button>
-            <button class="action-btn touch-feedback" onclick="nextPhoto()">🖼️ Next Photo</button>
             <button class="action-btn touch-feedback" onclick="showTimerPresets()">⏲️ Timer Presets</button>
             <button class="action-btn touch-feedback" onclick="toggleVoiceCommands()">🎤 Voice Commands</button>
+            <button class="action-btn touch-feedback" onclick="showWeatherInfo()">🌤️ Weather Info</button>
+            <button class="action-btn touch-feedback" onclick="showPhotoInfo()">📸 Photo Info</button>
         </div>
 
         <!-- Footer -->
@@ -409,7 +410,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateClock();
             setInterval(updateClock, 1000);
-            setInterval(updateData, 30000);
+            setInterval(updateData, 600000); // Update every 10 minutes (within API limits)
             
             // Initial data load
             loadWeather();
@@ -551,12 +552,12 @@
 
         async function loadPhotos() {
             try {
-                const response = await fetch('/api/photos/slideshow?limit=5');
+                const response = await fetch('/api/photos/slideshow?limit=20');
                 if (response.ok) {
                     photos = await response.json();
                     if (photos.length > 0) {
                         showCurrentPhoto();
-                        setInterval(nextPhoto, 10000); // Change every 10 seconds
+                        setInterval(nextPhoto, 5000); // Change every 5 seconds for smoother scrolling
                         document.getElementById('photosStatus').className = 'status-indicator status-online';
                     } else {
                         document.getElementById('photoSlideshow').innerHTML = '<div class="slideshow-placeholder">No photos found<br>Add photos to ~/Pictures</div>';
@@ -576,12 +577,36 @@
             if (photos.length === 0) return;
             
             const photo = photos[currentPhoto];
-            document.getElementById('photoSlideshow').innerHTML = `
-                <img src="/api/photos/image/${photo.id}?size=medium" 
-                     alt="${photo.filename}" 
-                     class="slideshow-image"
-                     onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\\"slideshow-placeholder\\">Photo loading error</div>'">
-            `;
+            const slideshow = document.getElementById('photoSlideshow');
+            
+            // Create new image element
+            const newImg = document.createElement('img');
+            newImg.src = `/api/photos/image/${photo.id}?size=medium`;
+            newImg.alt = photo.filename;
+            newImg.className = 'slideshow-image';
+            newImg.style.opacity = '0';
+            newImg.style.transition = 'opacity 0.5s ease-in-out';
+            
+            // Handle successful load
+            newImg.onload = function() {
+                // Fade out current content
+                slideshow.style.opacity = '0';
+                
+                setTimeout(() => {
+                    // Replace content and fade in
+                    slideshow.innerHTML = '';
+                    slideshow.appendChild(newImg);
+                    slideshow.style.opacity = '1';
+                    newImg.style.opacity = '1';
+                }, 250);
+            };
+            
+            // Handle error case
+            newImg.onerror = function() {
+                console.warn(`Failed to load photo: ${photo.filename}`);
+                // Continue to next photo if this one fails
+                setTimeout(() => nextPhoto(), 1000);
+            };
         }
 
         function nextPhoto() {
@@ -688,17 +713,30 @@
         }
 
         // Quick action functions
-        function refreshWeather() {
-            document.getElementById('weatherStatus').className = 'status-indicator status-loading';
-            loadWeather();
-        }
-
         function showTimerPresets() {
             alert('Timer presets: 5min, 10min, 25min (Pomodoro)');
         }
 
         function toggleVoiceCommands() {
             alert('Voice commands: "Hey Hub, start 5 minute timer" or "Hey Hub, add todo wash dishes"');
+        }
+
+        function showWeatherInfo() {
+            if (weather) {
+                alert(`Weather for ${weather.location}\nTemperature: ${Math.round(weather.temperature.current)}°${weather.temperature.unit}\nCondition: ${weather.condition.description}\nHumidity: ${weather.humidity}%\nWind: ${Math.round(weather.wind_speed * 2.237)} mph`);
+            } else {
+                alert('Weather data not available');
+            }
+        }
+
+        function showPhotoInfo() {
+            if (photos.length > 0) {
+                const current = photos[currentPhoto];
+                const info = `Photo ${currentPhoto + 1} of ${photos.length}\nFilename: ${current.filename}\nSize: ${(current.file_size / 1024 / 1024).toFixed(1)} MB\nDimensions: ${current.width} x ${current.height}`;
+                alert(info);
+            } else {
+                alert('No photos available');
+            }
         }
     </script>
 </body>

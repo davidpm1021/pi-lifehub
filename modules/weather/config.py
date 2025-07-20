@@ -32,7 +32,7 @@ class WeatherConfigManager:
             "location": os.getenv("WEATHER_LOCATION", config_data.get("location", "London,UK")),
             "units": os.getenv("WEATHER_UNITS", config_data.get("units", "imperial")),
             "update_interval": int(os.getenv("WEATHER_UPDATE_INTERVAL", 
-                                          config_data.get("update_interval", 300))),
+                                          config_data.get("update_interval", 900))),  # 15 minutes = ~96 calls/day
             "provider": os.getenv("WEATHER_PROVIDER", config_data.get("provider", "openweathermap"))
         }
         
