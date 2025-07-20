@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Hub</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+            font-weight: 300;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: auto 1fr;
+            gap: 1px;
+            height: 100vh;
+            background: #111;
+        }
+
+        .time-section {
+            grid-column: 1 / -1;
+            padding: 2rem;
+            background: #000;
+            border-bottom: 1px solid #222;
+        }
+
+        .time {
+            font-size: 4rem;
+            font-weight: 200;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .date {
+            font-size: 1.1rem;
+            color: #888;
+            font-weight: 400;
+        }
+
+        .panel {
+            background: #111;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border-right: 1px solid #222;
+        }
+
+        .panel:last-child {
+            border-right: none;
+        }
+
+        .panel-title {
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        /* Family Panel */
+        .family-member {
+            background: transparent;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            font-weight: 400;
+        }
+
+        .family-member:hover {
+            border-color: #555;
+            background: #1a1a1a;
+        }
+
+        .family-member.active {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
+        }
+
+        /* Todos Panel */
+        .todo-input {
+            background: transparent;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 1rem;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            font-family: inherit;
+            display: none;
+        }
+
+        .todo-input:focus {
+            outline: none;
+            border-color: #555;
+        }
+
+        .todo-input::placeholder {
+            color: #666;
+        }
+
+        .todo-item {
+            padding: 1rem;
+            border-bottom: 1px solid #222;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
+        .todo-item:last-child {
+            border-bottom: none;
+        }
+
+        .todo-item.completed {
+            color: #666;
+            text-decoration: line-through;
+        }
+
+        .todo-complete {
+            background: transparent;
+            border: 1px solid #333;
+            color: #fff;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .todo-complete:hover {
+            border-color: #fff;
+            background: #fff;
+            color: #000;
+        }
+
+        .todo-placeholder {
+            color: #666;
+            text-align: center;
+            padding: 2rem 0;
+            font-size: 0.9rem;
+        }
+
+        /* Weather Panel */
+        .weather-main {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 1rem;
+        }
+
+        .weather-temp {
+            font-size: 3rem;
+            font-weight: 200;
+            margin-right: 0.5rem;
+        }
+
+        .weather-condition {
+            font-size: 1rem;
+            color: #888;
+            margin-bottom: 1.5rem;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .weather-detail {
+            color: #888;
+        }
+
+        .weather-detail strong {
+            color: #fff;
+            font-weight: 400;
+        }
+
+        /* Status indicators */
+        .status {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #333;
+        }
+
+        .status.online { background: #0f0; }
+        .status.offline { background: #f00; }
+        .status.loading { background: #ff0; }
+
+        /* Timer Panel (replaces photos for now) */
+        .timer-display {
+            font-size: 2.5rem;
+            font-weight: 200;
+            text-align: center;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .timer-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: auto;
+        }
+
+        .timer-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 0.8rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .timer-btn:hover {
+            border-color: #555;
+            background: #1a1a1a;
+        }
+
+        .timer-btn.active {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
+        }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto repeat(3, 1fr);
+            }
+            
+            .panel {
+                border-right: none;
+                border-bottom: 1px solid #222;
+            }
+            
+            .time {
+                font-size: 3rem;
+            }
+        }
+
+        /* Animations */
+        .panel {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Touch targets */
+        .family-member, .timer-btn, .todo-complete {
+            min-height: 44px;
+            min-width: 44px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Time Section -->
+        <div class="time-section">
+            <div class="time" id="timeDisplay">--:--</div>
+            <div class="date" id="dateDisplay">Loading...</div>
+        </div>
+
+        <!-- Family Panel -->
+        <div class="panel">
+            <div class="panel-title">Family</div>
+            <div class="status" id="familyStatus"></div>
+            
+            <button class="family-member" data-user-id="1">Dave</button>
+            <button class="family-member" data-user-id="3">Ashley</button>
+            <button class="family-member" data-user-id="4">Charlotte</button>
+            <button class="family-member" data-user-id="6">Daisy</button>
+        </div>
+
+        <!-- Todos Panel -->
+        <div class="panel">
+            <div class="panel-title">Tasks <span id="selectedUser"></span></div>
+            <div class="status" id="todosStatus"></div>
+            
+            <input type="text" class="todo-input" id="todoInput" placeholder="Add task...">
+            <div id="todoList">
+                <div class="todo-placeholder">Select a family member</div>
+            </div>
+        </div>
+
+        <!-- Weather Panel -->
+        <div class="panel">
+            <div class="panel-title">Weather</div>
+            <div class="status loading" id="weatherStatus"></div>
+            
+            <div id="weatherContent">
+                <div class="weather-main">
+                    <div class="weather-temp">--°</div>
+                </div>
+                <div class="weather-condition">Loading...</div>
+                <div class="weather-details">
+                    <div class="weather-detail">Humidity <strong>--%</strong></div>
+                    <div class="weather-detail">Wind <strong>-- mph</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentTimer = null;
+        let weather = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateClock();
+            setInterval(updateClock, 1000);
+            setInterval(updateData, 30000);
+            
+            loadWeather();
+            setupEventListeners();
+        });
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('timeDisplay').textContent = now.toLocaleTimeString('en-US', {
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true,
+                timeZone: 'America/New_York'
+            });
+            document.getElementById('dateDisplay').textContent = now.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                timeZone: 'America/New_York'
+            });
+        }
+
+        function setupEventListeners() {
+            // Family member selection
+            document.querySelectorAll('.family-member').forEach(button => {
+                button.addEventListener('click', function() {
+                    selectFamilyMember(this.dataset.userId, this.textContent);
+                });
+            });
+
+            // Todo input
+            document.getElementById('todoInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && this.value.trim()) {
+                    addTodo(this.value.trim());
+                    this.value = '';
+                }
+            });
+        }
+
+        async function selectFamilyMember(userId, userName) {
+            currentUser = userId;
+            
+            // Update UI
+            document.querySelectorAll('.family-member').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-user-id="${userId}"]`).classList.add('active');
+            document.getElementById('selectedUser').textContent = `• ${userName}`;
+            document.getElementById('todoInput').style.display = 'block';
+            
+            // Load todos
+            await loadTodos(userId);
+        }
+
+        async function loadTodos(userId) {
+            try {
+                const response = await fetch(`/api/todos/${userId}`);
+                const todos = await response.json();
+                
+                const todoList = document.getElementById('todoList');
+                if (todos.length === 0) {
+                    todoList.innerHTML = '<div class="todo-placeholder">No tasks yet</div>';
+                } else {
+                    todoList.innerHTML = todos.map(todo => `
+                        <div class="todo-item ${todo.completed ? 'completed' : ''}">
+                            <span>${todo.task}</span>
+                            ${!todo.completed ? `<button class="todo-complete" onclick="completeTodo(${todo.id})">✓</button>` : ''}
+                        </div>
+                    `).join('');
+                }
+                document.getElementById('todosStatus').className = 'status online';
+            } catch (error) {
+                console.error('Failed to load todos:', error);
+                document.getElementById('todosStatus').className = 'status offline';
+            }
+        }
+
+        async function addTodo(task) {
+            if (!currentUser) return;
+            
+            try {
+                await fetch(`/api/todos/${currentUser}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ task })
+                });
+                await loadTodos(currentUser);
+            } catch (error) {
+                console.error('Failed to add todo:', error);
+            }
+        }
+
+        async function completeTodo(todoId) {
+            try {
+                await fetch(`/api/todos/${todoId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ completed: true })
+                });
+                await loadTodos(currentUser);
+            } catch (error) {
+                console.error('Failed to complete todo:', error);
+            }
+        }
+
+        async function loadWeather() {
+            try {
+                const response = await fetch('/api/weather/current');
+                if (response.ok) {
+                    weather = await response.json();
+                    updateWeatherDisplay();
+                    document.getElementById('weatherStatus').className = 'status online';
+                } else {
+                    throw new Error('Weather API error');
+                }
+            } catch (error) {
+                console.error('Failed to load weather:', error);
+                document.getElementById('weatherStatus').className = 'status offline';
+                document.getElementById('weatherContent').innerHTML = `
+                    <div class="weather-main">
+                        <div class="weather-temp">--°</div>
+                    </div>
+                    <div class="weather-condition">Unavailable</div>
+                    <div class="weather-details">
+                        <div class="weather-detail">Check setup</div>
+                        <div class="weather-detail"></div>
+                    </div>
+                `;
+            }
+        }
+
+        function updateWeatherDisplay() {
+            if (!weather) return;
+            
+            document.getElementById('weatherContent').innerHTML = `
+                <div class="weather-main">
+                    <div class="weather-temp">${Math.round(weather.temperature.current)}°</div>
+                </div>
+                <div class="weather-condition">${weather.condition.description}</div>
+                <div class="weather-details">
+                    <div class="weather-detail">Humidity <strong>${weather.humidity}%</strong></div>
+                    <div class="weather-detail">Wind <strong>${Math.round(weather.wind_speed * 2.237)} mph</strong></div>
+                </div>
+            `;
+        }
+
+        function updateData() {
+            loadWeather();
+        }
+
+        // Set family status as online
+        document.getElementById('familyStatus').className = 'status online';
+    </script>
+</body>
+</html>
