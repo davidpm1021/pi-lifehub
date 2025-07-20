@@ -14,16 +14,23 @@
 - Python venv stores absolute paths that break across mount boundaries
 
 **Setup Process:**
-1. SSHFS mount: `sshfs pi@[PI_IP]:/home/davidpm/lifehub /home/davidpm/pi-lifehub`
+1. SSHFS mount: `sshfs davidpm@192.168.86.36:/home/davidpm/lifehub /home/davidpm/pi-lifehub`
 2. Develop through mount, but create venv on Pi:
    ```bash
    # On Pi directly:
+   ssh davidpm@192.168.86.36
    cd /home/davidpm/lifehub
    rm -rf venv  # if exists with wrong paths
    python3 -m venv venv
    source venv/bin/activate
    pip install -r requirements.txt
    ```
+
+**Project Structure:**
+- Development machine mount: `/home/davidpm/pi-lifehub/` (SSHFS mounted)
+- Pi actual files: `/home/davidpm/lifehub/` (on 192.168.86.36)
+- Git repository: Only work in `/home/davidpm/pi-lifehub/` (mounted directory)
+- Service runs from: `/home/davidpm/lifehub/` on Pi
 
 ## 2. Claude Code Optimization Patterns
 Use parallel operations for efficiency:

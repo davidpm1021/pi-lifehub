@@ -157,6 +157,57 @@
             font-size: 0.9em;
         }
 
+        /* Calendar Widget */
+        .calendar-widget {
+            grid-column: 1;
+        }
+
+        .calendar-event {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            border-left: 4px solid #007bff;
+        }
+
+        .calendar-event.next-event {
+            border-left-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .calendar-event.all-day {
+            border-left-color: #ffc107;
+        }
+
+        .calendar-event.past {
+            opacity: 0.6;
+            border-left-color: #6c757d;
+        }
+
+        .event-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 4px;
+        }
+
+        .event-time {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 4px;
+        }
+
+        .event-location {
+            font-size: 0.85em;
+            opacity: 0.7;
+        }
+
+        .calendar-summary {
+            text-align: center;
+            padding: 10px;
+            font-size: 0.9em;
+            opacity: 0.7;
+        }
+
         /* Phase 2 Widgets */
         .photos-widget {
             grid-column: 1;
@@ -364,6 +415,16 @@
             </div>
         </div>
 
+        <!-- Calendar Widget -->
+        <div class="widget calendar-widget">
+            <h3>📅 Calendar <span class="status-indicator status-loading" id="calendarStatus"></span></h3>
+            <div id="calendarContent">
+                <div style="text-align: center; opacity: 0.7; padding: 20px;">
+                    Loading calendar events...
+                </div>
+            </div>
+        </div>
+
         <!-- Photo Slideshow -->
         <div class="widget photos-widget">
             <h3>📸 Family Photos <span class="status-indicator status-loading" id="photosStatus"></span></h3>
@@ -405,6 +466,7 @@
         let currentPhoto = 0;
         let photos = [];
         let weather = null;
+        let calendar = null;
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
@@ -415,6 +477,7 @@
             // Initial data load
             loadWeather();
             loadPhotos();
+            loadCalendar();
             checkTimerStatus();
             
             // Family member selection
@@ -709,7 +772,159 @@
 
         function updateData() {
             loadWeather();
+            loadCalendar();
             document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+        }
+
+        async function loadCalendar() {
+            try {
+                const response = await fetch('/api/calendar/summary');
+                if (response.ok) {
+                    calendar = await response.json();
+                    updateCalendarDisplay();
+                    document.getElementById('calendarStatus').className = 'status-indicator status-online';
+                } else {
+                    throw new Error('Calendar API not configured');
+                }
+            } catch (error) {
+                console.error('Failed to load calendar:', error);
+                document.getElementById('calendarStatus').className = 'status-indicator status-offline';
+                document.getElementById('calendarContent').innerHTML = `
+                    <div class="calendar-summary">
+                        Calendar unavailable<br>
+                        <small>Check API setup</small>
+                    </div>
+                `;
+            }
+        }
+
+        function updateCalendarDisplay() {
+            if (!calendar) return;
+            
+            const content = document.getElementById('calendarContent');
+            
+            if (calendar.today_events.length === 0 && calendar.upcoming_events.length === 0) {
+                content.innerHTML = `
+                    <div class="calendar-summary">
+                        No events today<br>
+                        <small>Enjoy your free time!</small>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            
+            // Show today's events
+            if (calendar.today_events.length > 0) {
+                calendar.today_events.forEach(event => {
+                    const isNext = calendar.next_event && calendar.next_event.id === event.id;
+                    const isPast = new Date(event.end_time) < new Date();
+                    
+                    html += `
+                        <div class="calendar-event ${event.is_all_day ? 'all-day' : ''} ${isPast ? 'past' : ''} ${isNext ? 'next-event' : ''}">
+                            <div class="event-title">${event.title}</div>
+                            <div class="event-time">${formatEventTime(event)}</div>
+                            ${event.location ? `<div class="event-location">📍 ${event.location}</div>` : ''}
+                        </div>
+                    `;
+                });
+            }
+            
+            // Show next upcoming event if no events today
+            if (calendar.today_events.length === 0 && calendar.next_event) {
+                html += `
+                    <div class="calendar-event next-event">
+                        <div class="event-title">${calendar.next_event.title}</div>
+                        <div class="event-time">${formatEventTime(calendar.next_event)}</div>
+                        ${calendar.next_event.location ? `<div class="event-location">📍 ${calendar.next_event.location}</div>` : ''}
+                    </div>
+                `;
+            }
+            
+            // Show summary of upcoming events
+            if (calendar.today_events.length === 0 && calendar.upcoming_events.length > 1) {
+                // Show a few more upcoming events after the next event
+                const additionalEvents = calendar.upcoming_events.slice(1, 3); // Show next 2 events
+                additionalEvents.forEach(event => {
+                    html += `
+                        <div class="calendar-event" style="opacity: 0.7; font-size: 0.9em;">
+                            <div class="event-title">${event.title}</div>
+                            <div class="event-time">${formatEventDate(event)} - ${formatEventTime(event)}</div>
+                        </div>
+                    `;
+                });
+                
+                if (calendar.upcoming_events.length > 3) {
+                    html += `
+                        <div class="calendar-summary">
+                            +${calendar.upcoming_events.length - 3} more events this week
+                        </div>
+                    `;
+                }
+            }
+            
+            content.innerHTML = html;
+        }
+
+        function formatEventTime(event) {
+            if (event.is_all_day) {
+                return 'All day';
+            }
+            
+            const start = new Date(event.start_time);
+            const end = new Date(event.end_time);
+            
+            const startTime = start.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+            
+            // Check if this is a multi-day event
+            const daysDiff = Math.floor((end - start) / (1000 * 60 * 60 * 24));
+            
+            if (daysDiff > 0) {
+                // Multi-day event - show date range and daily time
+                const startDate = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const endDate = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                
+                const endTime = end.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                
+                // For multi-day events, show the time range that repeats each day
+                return `${startDate} - ${endDate}, Daily ${startTime} - ${endTime}`;
+            } else if (start.toDateString() === end.toDateString()) {
+                const endTime = end.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                return `${startTime} - ${endTime}`;
+            } else {
+                return startTime;
+            }
+        }
+
+        function formatEventDate(event) {
+            const eventDate = new Date(event.start_time);
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            if (eventDate.toDateString() === today.toDateString()) {
+                return 'Today';
+            } else if (eventDate.toDateString() === tomorrow.toDateString()) {
+                return 'Tomorrow';
+            } else {
+                return eventDate.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric'
+                });
+            }
         }
 
         // Quick action functions

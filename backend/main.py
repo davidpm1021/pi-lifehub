@@ -394,6 +394,14 @@ try:
 except ImportError as e:
     logger.warning(f"Timer module not available: {e}")
 
+# Add calendar module
+try:
+    from modules.calendar.api import router as calendar_router
+    app.include_router(calendar_router)
+    logger.info("Calendar API routes added")
+except ImportError as e:
+    logger.warning(f"Calendar module not available: {e}")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
