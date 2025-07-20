@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Hub</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="dashboard">
+        <header class="dashboard-header">
+            <div class="time-display">
+                <div class="time" id="current-time">--:--</div>
+                <div class="date" id="current-date">Loading...</div>
+            </div>
+            <div class="user-profile">
+                <select id="user-select" class="user-selector">
+                    <option value="">Select Family Member</option>
+                </select>
+            </div>
+        </header>
+
+        <main class="dashboard-content">
+            <div class="widget-grid">
+                <div class="widget todo-widget">
+                    <h2>My Tasks</h2>
+                    <div id="todo-list" class="todo-list">
+                        <p class="empty-state">Select a family member to view tasks</p>
+                    </div>
+                    <div class="todo-input" style="display: none;">
+                        <input type="text" id="new-todo" placeholder="Add a new task..." maxlength="100">
+                        <button id="add-todo" class="btn-primary">Add</button>
+                    </div>
+                </div>
+
+                <div class="widget weather-widget">
+                    <h2>Weather</h2>
+                    <div class="weather-content">
+                        <div class="temp">--°</div>
+                        <div class="condition">Coming Soon</div>
+                    </div>
+                </div>
+
+                <div class="widget calendar-widget">
+                    <h2>Today</h2>
+                    <div class="calendar-content">
+                        <p class="calendar-placeholder">Calendar integration coming soon</p>
+                    </div>
+                </div>
+
+                <div class="widget quick-actions">
+                    <h2>Quick Actions</h2>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="startTimer()">
+                            <span>⏱️</span>
+                            Timer
+                        </button>
+                        <button class="action-btn" onclick="showNFC()">
+                            <span>📱</span>
+                            NFC
+                        </button>
+                        <button class="action-btn" onclick="showPhotos()">
+                            <span>📸</span>
+                            Photos
+                        </button>
+                        <button class="action-btn" onclick="showSettings()">
+                            <span>⚙️</span>
+                            Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div id="modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <div id="modal-body"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

@@ -88,7 +88,7 @@ class WeatherService:
                 feels_like=round(temp_data["feels_like"], 1),
                 min=round(temp_data["temp_min"], 1),
                 max=round(temp_data["temp_max"], 1),
-                unit="°C" if self.config.units == "metric" else "°F"
+                unit="F" if self.config.units == "imperial" else "C"
             )
             
             # Extract weather condition

@@ -544,7 +544,7 @@
                 <div class="weather-condition">${weather.condition.description}</div>
                 <div class="weather-details">
                     <div>Humidity: ${weather.humidity}%</div>
-                    <div>Wind: ${weather.wind_speed} m/s</div>
+                    <div>Wind: ${Math.round(weather.wind_speed * 2.237)} mph</div>
                 </div>
             `;
         }

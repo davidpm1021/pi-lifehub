@@ -3,83 +3,703 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Life Hub</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Pi Life Hub - Enhanced Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: auto 1fr auto;
+            gap: 15px;
+            padding: 15px;
+            height: 100vh;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .time-display {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .date-display {
+            font-size: 1.2em;
+            opacity: 0.8;
+        }
+
+        .widget {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.2s ease;
+        }
+
+        .widget:hover {
+            transform: translateY(-2px);
+        }
+
+        .widget h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Family Selector */
+        .family-selector {
+            grid-column: 1;
+        }
+
+        .family-member {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 12px;
+            margin: 5px 0;
+            border-radius: 10px;
+            width: 100%;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 48px;
+        }
+
+        .family-member:hover, .family-member.active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.02);
+        }
+
+        /* Todos Widget */
+        .todos-widget {
+            grid-column: 2;
+        }
+
+        .todo-input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            min-height: 48px;
+        }
+
+        .todo-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 48px;
+        }
+
+        .todo-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .todo-complete {
+            background: #28a745;
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            min-height: 40px;
+            min-width: 40px;
+        }
+
+        /* Weather Widget */
+        .weather-widget {
+            grid-column: 3;
+            text-align: center;
+        }
+
+        .weather-temp {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .weather-condition {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+
+        /* Phase 2 Widgets */
+        .photos-widget {
+            grid-column: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .photo-slideshow {
+            width: 100%;
+            height: 200px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .slideshow-image {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+
+        .slideshow-placeholder {
+            font-size: 1.1em;
+            opacity: 0.7;
+        }
+
+        .timer-widget {
+            grid-column: 2;
+        }
+
+        .timer-display {
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .timer-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            min-height: 48px;
+            transition: all 0.2s ease;
+        }
+
+        .timer-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .timer-btn.primary {
+            background: #007bff;
+        }
+
+        .timer-btn.success {
+            background: #28a745;
+        }
+
+        .timer-btn.danger {
+            background: #dc3545;
+        }
+
+        .quick-actions {
+            grid-column: 3;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 15px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 50px;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .footer {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-size: 0.9em;
+            opacity: 0.7;
+        }
+
+        /* Status indicators */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 8px;
+        }
+
+        .status-online { background: #28a745; }
+        .status-offline { background: #dc3545; }
+        .status-loading { background: #ffc107; animation: pulse 1s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Touch feedback */
+        .touch-feedback {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .touch-feedback::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: width 0.3s ease, height 0.3s ease;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .touch-feedback:active::after {
+            width: 200px;
+            height: 200px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 800px) {
+            .dashboard {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                padding: 10px;
+            }
+            
+            .time-display {
+                font-size: 2.5em;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard">
-        <header class="dashboard-header">
-            <div class="time-display">
-                <div class="time" id="current-time">--:--</div>
-                <div class="date" id="current-date">Loading...</div>
+        <!-- Header with Time/Date -->
+        <div class="header">
+            <div class="time-display" id="timeDisplay">--:--</div>
+            <div class="date-display" id="dateDisplay">Loading...</div>
+        </div>
+
+        <!-- Family Selector -->
+        <div class="widget family-selector">
+            <h3>👨‍👩‍👧‍👦 Family Members</h3>
+            <div id="familyMembers">
+                <button class="family-member touch-feedback" data-user-id="1">Dave</button>
+                <button class="family-member touch-feedback" data-user-id="3">Ashley</button>
+                <button class="family-member touch-feedback" data-user-id="4">Charlotte</button>
+                <button class="family-member touch-feedback" data-user-id="6">Daisy</button>
             </div>
-            <div class="user-profile">
-                <select id="user-select" class="user-selector">
-                    <option value="">Select Family Member</option>
-                </select>
-            </div>
-        </header>
+        </div>
 
-        <main class="dashboard-content">
-            <div class="widget-grid">
-                <div class="widget todo-widget">
-                    <h2>My Tasks</h2>
-                    <div id="todo-list" class="todo-list">
-                        <p class="empty-state">Select a family member to view tasks</p>
-                    </div>
-                    <div class="todo-input" style="display: none;">
-                        <input type="text" id="new-todo" placeholder="Add a new task..." maxlength="100">
-                        <button id="add-todo" class="btn-primary">Add</button>
-                    </div>
-                </div>
-
-                <div class="widget weather-widget">
-                    <h2>Weather</h2>
-                    <div class="weather-content">
-                        <div class="temp">--°</div>
-                        <div class="condition">Coming Soon</div>
-                    </div>
-                </div>
-
-                <div class="widget calendar-widget">
-                    <h2>Today</h2>
-                    <div class="calendar-content">
-                        <p class="calendar-placeholder">Calendar integration coming soon</p>
-                    </div>
-                </div>
-
-                <div class="widget quick-actions">
-                    <h2>Quick Actions</h2>
-                    <div class="action-buttons">
-                        <button class="action-btn" onclick="startTimer()">
-                            <span>⏱️</span>
-                            Timer
-                        </button>
-                        <button class="action-btn" onclick="showNFC()">
-                            <span>📱</span>
-                            NFC
-                        </button>
-                        <button class="action-btn" onclick="showPhotos()">
-                            <span>📸</span>
-                            Photos
-                        </button>
-                        <button class="action-btn" onclick="showSettings()">
-                            <span>⚙️</span>
-                            Settings
-                        </button>
-                    </div>
+        <!-- Todos Widget -->
+        <div class="widget todos-widget">
+            <h3>📝 Todo List <span id="selectedUserName">Select a family member</span></h3>
+            <input type="text" class="todo-input" id="todoInput" placeholder="Add a new todo..." style="display: none;">
+            <div id="todoList">
+                <div style="text-align: center; opacity: 0.7; padding: 20px;">
+                    Select a family member to view their todos
                 </div>
             </div>
-        </main>
+        </div>
 
-        <div id="modal" class="modal" style="display: none;">
-            <div class="modal-content">
-                <span class="close" onclick="closeModal()">&times;</span>
-                <div id="modal-body"></div>
+        <!-- Weather Widget -->
+        <div class="widget weather-widget">
+            <h3>🌤️ Weather <span class="status-indicator status-loading" id="weatherStatus"></span></h3>
+            <div id="weatherContent">
+                <div class="weather-temp">--°</div>
+                <div class="weather-condition">Loading weather...</div>
+                <div class="weather-details">
+                    <div>Humidity: --%</div>
+                    <div>Wind: -- km/h</div>
+                </div>
             </div>
+        </div>
+
+        <!-- Photo Slideshow -->
+        <div class="widget photos-widget">
+            <h3>📸 Family Photos <span class="status-indicator status-loading" id="photosStatus"></span></h3>
+            <div class="photo-slideshow" id="photoSlideshow">
+                <div class="slideshow-placeholder">Loading photos...</div>
+            </div>
+        </div>
+
+        <!-- Timer Widget -->
+        <div class="widget timer-widget">
+            <h3>⏰ Timer <span class="status-indicator status-loading" id="timerStatus"></span></h3>
+            <div class="timer-display" id="timerDisplay">00:00</div>
+            <div class="timer-controls">
+                <button class="timer-btn primary touch-feedback" onclick="startQuickTimer(300)">5 min</button>
+                <button class="timer-btn primary touch-feedback" onclick="startQuickTimer(600)">10 min</button>
+                <button class="timer-btn success touch-feedback" onclick="startQuickTimer(1500)">25 min</button>
+                <button class="timer-btn danger touch-feedback" onclick="stopCurrentTimer()">Stop</button>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="widget quick-actions">
+            <h3>🚀 Quick Actions</h3>
+            <button class="action-btn touch-feedback" onclick="refreshWeather()">🌡️ Refresh Weather</button>
+            <button class="action-btn touch-feedback" onclick="nextPhoto()">🖼️ Next Photo</button>
+            <button class="action-btn touch-feedback" onclick="showTimerPresets()">⏲️ Timer Presets</button>
+            <button class="action-btn touch-feedback" onclick="toggleVoiceCommands()">🎤 Voice Commands</button>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            Pi Life Hub v2.0 | Last updated: <span id="lastUpdate">--</span>
         </div>
     </div>
 
-    <script src="/static/app.js"></script>
+    <script>
+        let currentUser = null;
+        let currentTimer = null;
+        let currentPhoto = 0;
+        let photos = [];
+        let weather = null;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            updateClock();
+            setInterval(updateClock, 1000);
+            setInterval(updateData, 30000);
+            
+            // Initial data load
+            loadWeather();
+            loadPhotos();
+            checkTimerStatus();
+            
+            // Family member selection
+            document.querySelectorAll('.family-member').forEach(button => {
+                button.addEventListener('click', function() {
+                    selectFamilyMember(this.dataset.userId, this.textContent);
+                });
+            });
+
+            // Todo input
+            document.getElementById('todoInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && this.value.trim()) {
+                    addTodo(this.value.trim());
+                    this.value = '';
+                }
+            });
+        });
+
+        function updateClock() {
+            const now = new Date();
+            // 12-hour format with AM/PM for Eastern Time (Medford, NJ)
+            document.getElementById('timeDisplay').textContent = now.toLocaleTimeString('en-US', {
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true,
+                timeZone: 'America/New_York'
+            });
+            document.getElementById('dateDisplay').textContent = now.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                timeZone: 'America/New_York'
+            });
+        }
+
+        async function selectFamilyMember(userId, userName) {
+            currentUser = userId;
+            
+            // Update UI
+            document.querySelectorAll('.family-member').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-user-id="${userId}"]`).classList.add('active');
+            document.getElementById('selectedUserName').textContent = `- ${userName}`;
+            document.getElementById('todoInput').style.display = 'block';
+            
+            // Load todos
+            await loadTodos(userId);
+        }
+
+        async function loadTodos(userId) {
+            try {
+                const response = await fetch(`/api/todos/${userId}`);
+                const todos = await response.json();
+                
+                const todoList = document.getElementById('todoList');
+                if (todos.length === 0) {
+                    todoList.innerHTML = '<div style="text-align: center; opacity: 0.7; padding: 20px;">No todos yet. Add one above!</div>';
+                } else {
+                    todoList.innerHTML = todos.map(todo => `
+                        <div class="todo-item ${todo.completed ? 'completed' : ''}">
+                            <span>${todo.task}</span>
+                            ${!todo.completed ? `<button class="todo-complete touch-feedback" onclick="completeTodo(${todo.id})">✓</button>` : ''}
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load todos:', error);
+            }
+        }
+
+        async function addTodo(task) {
+            if (!currentUser) return;
+            
+            try {
+                await fetch(`/api/todos/${currentUser}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ task })
+                });
+                await loadTodos(currentUser);
+            } catch (error) {
+                console.error('Failed to add todo:', error);
+            }
+        }
+
+        async function completeTodo(todoId) {
+            try {
+                await fetch(`/api/todos/${todoId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ completed: true })
+                });
+                await loadTodos(currentUser);
+            } catch (error) {
+                console.error('Failed to complete todo:', error);
+            }
+        }
+
+        async function loadWeather() {
+            try {
+                const response = await fetch('/api/weather/current');
+                if (response.ok) {
+                    weather = await response.json();
+                    updateWeatherDisplay();
+                    document.getElementById('weatherStatus').className = 'status-indicator status-online';
+                } else {
+                    throw new Error('Weather API not configured');
+                }
+            } catch (error) {
+                console.error('Failed to load weather:', error);
+                document.getElementById('weatherStatus').className = 'status-indicator status-offline';
+                document.getElementById('weatherContent').innerHTML = `
+                    <div class="weather-temp">N/A</div>
+                    <div class="weather-condition">Weather unavailable</div>
+                    <div class="weather-details">
+                        <div>Check API key</div>
+                        <div>in setup</div>
+                    </div>
+                `;
+            }
+        }
+
+        function updateWeatherDisplay() {
+            if (!weather) return;
+            
+            document.getElementById('weatherContent').innerHTML = `
+                <div class="weather-temp">${Math.round(weather.temperature.current)}°${weather.temperature.unit}</div>
+                <div class="weather-condition">${weather.condition.description}</div>
+                <div class="weather-details">
+                    <div>Humidity: ${weather.humidity}%</div>
+                    <div>Wind: ${Math.round(weather.wind_speed * 2.237)} mph</div>
+                </div>
+            `;
+        }
+
+        async function loadPhotos() {
+            try {
+                const response = await fetch('/api/photos/slideshow?limit=5');
+                if (response.ok) {
+                    photos = await response.json();
+                    if (photos.length > 0) {
+                        showCurrentPhoto();
+                        setInterval(nextPhoto, 10000); // Change every 10 seconds
+                        document.getElementById('photosStatus').className = 'status-indicator status-online';
+                    } else {
+                        document.getElementById('photoSlideshow').innerHTML = '<div class="slideshow-placeholder">No photos found<br>Add photos to ~/Pictures</div>';
+                        document.getElementById('photosStatus').className = 'status-indicator status-offline';
+                    }
+                } else {
+                    throw new Error('Photos API error');
+                }
+            } catch (error) {
+                console.error('Failed to load photos:', error);
+                document.getElementById('photosStatus').className = 'status-indicator status-offline';
+                document.getElementById('photoSlideshow').innerHTML = '<div class="slideshow-placeholder">Photos unavailable</div>';
+            }
+        }
+
+        function showCurrentPhoto() {
+            if (photos.length === 0) return;
+            
+            const photo = photos[currentPhoto];
+            document.getElementById('photoSlideshow').innerHTML = `
+                <img src="/api/photos/image/${photo.id}?size=medium" 
+                     alt="${photo.filename}" 
+                     class="slideshow-image"
+                     onerror="this.style.display='none'; this.parentNode.innerHTML='<div class=\\"slideshow-placeholder\\">Photo loading error</div>'">
+            `;
+        }
+
+        function nextPhoto() {
+            if (photos.length === 0) return;
+            currentPhoto = (currentPhoto + 1) % photos.length;
+            showCurrentPhoto();
+        }
+
+        async function startQuickTimer(seconds) {
+            try {
+                const response = await fetch('/api/timer/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: `${seconds/60} min timer`,
+                        duration_seconds: seconds,
+                        auto_start: true
+                    })
+                });
+                
+                if (response.ok) {
+                    currentTimer = await response.json();
+                    document.getElementById('timerStatus').className = 'status-indicator status-online';
+                    startTimerDisplay();
+                }
+            } catch (error) {
+                console.error('Failed to start timer:', error);
+                document.getElementById('timerStatus').className = 'status-indicator status-offline';
+            }
+        }
+
+        function startTimerDisplay() {
+            if (!currentTimer) return;
+            
+            const interval = setInterval(async () => {
+                if (!currentTimer) {
+                    clearInterval(interval);
+                    return;
+                }
+                
+                // Get updated timer status
+                try {
+                    const response = await fetch(`/api/timer/${currentTimer.id}`);
+                    if (response.ok) {
+                        currentTimer = await response.json();
+                        updateTimerDisplay();
+                        
+                        if (currentTimer.status === 'completed') {
+                            clearInterval(interval);
+                            alert(`Timer "${currentTimer.name}" completed!`);
+                            currentTimer = null;
+                            document.getElementById('timerDisplay').textContent = '00:00';
+                        }
+                    }
+                } catch (error) {
+                    clearInterval(interval);
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            if (!currentTimer) return;
+            
+            const minutes = Math.floor(currentTimer.remaining_seconds / 60);
+            const seconds = currentTimer.remaining_seconds % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        async function stopCurrentTimer() {
+            if (!currentTimer) return;
+            
+            try {
+                await fetch(`/api/timer/${currentTimer.id}/stop`, { method: 'POST' });
+                currentTimer = null;
+                document.getElementById('timerDisplay').textContent = '00:00';
+            } catch (error) {
+                console.error('Failed to stop timer:', error);
+            }
+        }
+
+        async function checkTimerStatus() {
+            try {
+                const response = await fetch('/api/timer/list');
+                if (response.ok) {
+                    const timers = await response.json();
+                    const runningTimer = timers.find(t => t.status === 'running');
+                    if (runningTimer) {
+                        currentTimer = runningTimer;
+                        startTimerDisplay();
+                        document.getElementById('timerStatus').className = 'status-indicator status-online';
+                    } else {
+                        document.getElementById('timerStatus').className = 'status-indicator status-offline';
+                    }
+                }
+            } catch (error) {
+                document.getElementById('timerStatus').className = 'status-indicator status-offline';
+            }
+        }
+
+        function updateData() {
+            loadWeather();
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+        }
+
+        // Quick action functions
+        function refreshWeather() {
+            document.getElementById('weatherStatus').className = 'status-indicator status-loading';
+            loadWeather();
+        }
+
+        function showTimerPresets() {
+            alert('Timer presets: 5min, 10min, 25min (Pomodoro)');
+        }
+
+        function toggleVoiceCommands() {
+            alert('Voice commands: "Hey Hub, start 5 minute timer" or "Hey Hub, add todo wash dishes"');
+        }
+    </script>
 </body>
 </html>
