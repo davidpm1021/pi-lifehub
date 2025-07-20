@@ -17,8 +17,8 @@ After creating the GitHub repo, run these commands on your Pi:
 ```bash
 cd /home/davidpm/lifehub
 
-# Add GitHub as remote origin (replace YOUR_USERNAME)
-git remote add origin https://github.com/YOUR_USERNAME/pi-lifehub.git
+# Add GitHub as remote origin
+git remote add origin https://github.com/davidpm1021/pi-lifehub.git
 
 # Push to GitHub
 git push -u origin main

@@ -365,6 +365,30 @@ if voice_available:
     app.include_router(voice_router)
     logger.info("Voice API routes added")
 
+# Add weather module
+try:
+    from modules.weather.api import router as weather_router
+    app.include_router(weather_router)
+    logger.info("Weather API routes added")
+except ImportError as e:
+    logger.warning(f"Weather module not available: {e}")
+
+# Add photos module
+try:
+    from modules.photos.api import router as photos_router
+    app.include_router(photos_router)
+    logger.info("Photos API routes added")
+except ImportError as e:
+    logger.warning(f"Photos module not available: {e}")
+
+# Add timer module
+try:
+    from modules.timer.api import router as timer_router
+    app.include_router(timer_router)
+    logger.info("Timer API routes added")
+except ImportError as e:
+    logger.warning(f"Timer module not available: {e}")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -2,7 +2,9 @@ fastapi==0.104.1
 uvicorn[standard]==0.24.0
 python-multipart==0.0.6
 psutil==5.9.6
+aiohttp==3.9.1
+Pillow==10.1.0
 
-# Voice module (optional - install separately)
-# pyaudio==0.2.13
-# SpeechRecognition==3.10.1
+# Voice module dependencies
+pyaudio==0.2.13
+SpeechRecognition==3.10.1
