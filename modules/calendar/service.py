@@ -144,9 +144,13 @@ class CalendarService:
                     # Convert to CalendarEvent objects
                     for event in calendar_events:
                         try:
-                            calendar_event = self._parse_event(event, calendar_id, calendar_name)
-                            if calendar_event:
-                                events.append(calendar_event)
+                            parsed_events = self._parse_event(event, calendar_id, calendar_name)
+                            if parsed_events:
+                                # _parse_event now returns a list of events (for multi-day expansion)
+                                if isinstance(parsed_events, list):
+                                    events.extend(parsed_events)
+                                else:
+                                    events.append(parsed_events)
                         except Exception as e:
                             logger.warning(f"Failed to parse event {event.get('id', 'unknown')}: {e}")
                             
@@ -171,8 +175,9 @@ class CalendarService:
             self.error_message = str(e)
             return self.cached_events  # Return cached events if available
     
-    def _parse_event(self, event: Dict[str, Any], calendar_id: str, calendar_name: str) -> Optional[CalendarEvent]:
-        """Parse a Google Calendar API event into a CalendarEvent object."""
+    def _parse_event(self, event: Dict[str, Any], calendar_id: str, calendar_name: str) -> Optional[List[CalendarEvent]]:
+        """Parse a Google Calendar API event into CalendarEvent object(s). 
+        Returns a list of events (for multi-day expansion) or a single event."""
         try:
             # Extract start and end times
             start = event['start']
@@ -193,30 +198,74 @@ class CalendarService:
             start_time = start_time.astimezone(local_tz).replace(tzinfo=None)
             end_time = end_time.astimezone(local_tz).replace(tzinfo=None)
             
-            # Extract attendees
+            # Extract common event data
             attendees = []
             if 'attendees' in event:
                 attendees = [attendee.get('email', '') for attendee in event['attendees']]
             
-            # Extract organizer
             organizer = None
             if 'organizer' in event:
                 organizer = event['organizer'].get('email', event['organizer'].get('displayName', ''))
             
-            return CalendarEvent(
-                id=event['id'],
-                title=event.get('summary', 'No Title'),
-                description=event.get('description', ''),
-                start_time=start_time,
-                end_time=end_time,
-                location=event.get('location', ''),
-                calendar_id=calendar_id,
-                calendar_name=calendar_name,
-                is_all_day=is_all_day,
-                attendees=attendees,
-                organizer=organizer,
-                status=event.get('status', 'confirmed')
-            )
+            # Check if this is a multi-day event that should be split
+            event_duration_days = (end_time.date() - start_time.date()).days
+            
+            if event_duration_days > 0 and not is_all_day:
+                # Multi-day event - create separate events for each day
+                events = []
+                current_date = start_time.date()
+                
+                while current_date <= end_time.date():
+                    # Calculate daily start and end times
+                    if current_date == start_time.date():
+                        # First day - use original start time
+                        daily_start = start_time
+                    else:
+                        # Subsequent days - use same time as original start
+                        daily_start = datetime.combine(current_date, start_time.time())
+                    
+                    if current_date == end_time.date():
+                        # Last day - use original end time
+                        daily_end = end_time
+                    else:
+                        # Other days - use same time as original end
+                        daily_end = datetime.combine(current_date, end_time.time())
+                    
+                    # Create event for this day
+                    daily_event = CalendarEvent(
+                        id=f"{event['id']}_{current_date.isoformat()}",  # Unique ID for each day
+                        title=event.get('summary', 'No Title'),
+                        description=event.get('description', ''),
+                        start_time=daily_start,
+                        end_time=daily_end,
+                        location=event.get('location', ''),
+                        calendar_id=calendar_id,
+                        calendar_name=calendar_name,
+                        is_all_day=False,
+                        attendees=attendees,
+                        organizer=organizer,
+                        status=event.get('status', 'confirmed')
+                    )
+                    events.append(daily_event)
+                    current_date += timedelta(days=1)
+                
+                return events
+            else:
+                # Single day event or all-day event
+                return [CalendarEvent(
+                    id=event['id'],
+                    title=event.get('summary', 'No Title'),
+                    description=event.get('description', ''),
+                    start_time=start_time,
+                    end_time=end_time,
+                    location=event.get('location', ''),
+                    calendar_id=calendar_id,
+                    calendar_name=calendar_name,
+                    is_all_day=is_all_day,
+                    attendees=attendees,
+                    organizer=organizer,
+                    status=event.get('status', 'confirmed')
+                )]
             
         except Exception as e:
             logger.warning(f"Failed to parse event: {e}")
@@ -227,13 +276,29 @@ class CalendarService:
         events = await self.get_events()
         
         today = datetime.now().date()
-        today_events = [e for e in events if e.start_time.date() == today]
-        upcoming_events = [e for e in events if e.start_time.date() > today][:5]  # Next 5 events
         
-        # Find next event
+        # Calculate current week (Sunday to Saturday)
+        # Find the Sunday of this week
+        days_since_sunday = today.weekday() % 7  # Convert Monday=0 to Sunday=0 system
+        if today.weekday() == 6:  # Sunday
+            days_since_sunday = 0
+        else:
+            days_since_sunday = today.weekday() + 1
+            
+        week_start = today - timedelta(days=days_since_sunday)  # This week's Sunday
+        week_end = week_start + timedelta(days=6)  # This week's Saturday
+        
+        # Get all events for this week
+        week_events = [e for e in events if week_start <= e.start_time.date() <= week_end]
+        
+        today_events = [e for e in week_events if e.start_time.date() == today]
+        upcoming_events = [e for e in week_events if e.start_time.date() > today]
+        
+        # Find next event (next upcoming event from now)
         next_event = None
+        now = datetime.now()
         for event in events:
-            if event.is_upcoming:
+            if event.start_time > now:
                 next_event = event
                 break
         
@@ -241,7 +306,7 @@ class CalendarService:
             today_events=today_events,
             upcoming_events=upcoming_events,
             next_event=next_event,
-            total_events=len(events),
+            total_events=len(week_events),
             last_updated=datetime.now()
         )
     

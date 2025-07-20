@@ -177,18 +177,65 @@
         }
 
         /* Calendar Widget */
+        .calendar-week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            height: 100%;
+            font-size: 0.75em;
+        }
+
+        .calendar-day-column {
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            padding: 4px;
+            overflow: hidden;
+        }
+
+        .calendar-day-column.today {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+
+        .calendar-day-header {
+            font-weight: bold;
+            text-align: center;
+            padding: 4px 2px;
+            font-size: 0.9em;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 4px;
+        }
+
+        .calendar-day-header.today {
+            color: #28a745;
+        }
+
+        .calendar-day-events {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .calendar-day-events::-webkit-scrollbar {
+            display: none;
+        }
 
         .calendar-event {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 12px;
-            margin: 8px 0;
-            border-left: 4px solid #007bff;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            padding: 3px 4px;
+            margin: 2px 0;
+            border-left: 3px solid #007bff;
+            font-size: 0.85em;
+            line-height: 1.2;
         }
 
         .calendar-event.next-event {
             border-left-color: #28a745;
-            background: rgba(40, 167, 69, 0.1);
+            background: rgba(40, 167, 69, 0.2);
         }
 
         .calendar-event.all-day {
@@ -202,19 +249,15 @@
 
         .event-title {
             font-weight: bold;
-            font-size: 1.1em;
-            margin-bottom: 4px;
+            font-size: 1em;
+            margin-bottom: 1px;
+            word-wrap: break-word;
         }
 
         .event-time {
-            font-size: 0.9em;
-            opacity: 0.8;
-            margin-bottom: 4px;
-        }
-
-        .event-location {
-            font-size: 0.85em;
-            opacity: 0.7;
+            font-size: 0.8em;
+            opacity: 0.9;
+            white-space: nowrap;
         }
 
         .calendar-summary {
@@ -879,64 +922,76 @@
             if (calendar.today_events.length === 0 && calendar.upcoming_events.length === 0) {
                 content.innerHTML = `
                     <div class="calendar-summary">
-                        No events today<br>
+                        No events this week<br>
                         <small>Enjoy your free time!</small>
                     </div>
                 `;
                 return;
             }
             
-            let html = '';
+            // Create weekly calendar grid
+            const today = new Date();
+            const currentWeekday = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - currentWeekday); // Start from Sunday
             
-            // Show today's events
-            if (calendar.today_events.length > 0) {
-                calendar.today_events.forEach(event => {
+            // Combine all events for the week and group by date
+            const allWeekEvents = [...calendar.today_events, ...calendar.upcoming_events];
+            const eventsByDate = {};
+            
+            // Group events by date string
+            allWeekEvents.forEach(event => {
+                const eventDate = new Date(event.start_time).toDateString();
+                if (!eventsByDate[eventDate]) {
+                    eventsByDate[eventDate] = [];
+                }
+                eventsByDate[eventDate].push(event);
+            });
+            
+            // Create the week grid
+            let html = '<div class="calendar-week-grid">';
+            
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            
+            for (let i = 0; i < 7; i++) {
+                const currentDay = new Date(weekStart);
+                currentDay.setDate(weekStart.getDate() + i);
+                const dateStr = currentDay.toDateString();
+                const isToday = dateStr === today.toDateString();
+                const dayEvents = eventsByDate[dateStr] || [];
+                
+                // Sort events by start time
+                dayEvents.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+                
+                html += `
+                    <div class="calendar-day-column ${isToday ? 'today' : ''}">
+                        <div class="calendar-day-header ${isToday ? 'today' : ''}">
+                            ${dayNames[i]}<br>
+                            <span style="font-size: 0.8em;">${currentDay.getDate()}</span>
+                        </div>
+                        <div class="calendar-day-events">
+                `;
+                
+                // Add events for this day
+                dayEvents.forEach(event => {
                     const isNext = calendar.next_event && calendar.next_event.id === event.id;
-                    const isPast = new Date(event.end_time) < new Date();
+                    const isPast = new Date(event.end_time) < new Date() && isToday;
                     
                     html += `
                         <div class="calendar-event ${event.is_all_day ? 'all-day' : ''} ${isPast ? 'past' : ''} ${isNext ? 'next-event' : ''}">
-                            <div class="event-title">${event.title}</div>
-                            <div class="event-time">${formatEventTime(event)}</div>
-                            ${event.location ? `<div class="event-location">📍 ${event.location}</div>` : ''}
-                        </div>
-                    `;
-                });
-            }
-            
-            // Show next upcoming event if no events today
-            if (calendar.today_events.length === 0 && calendar.next_event) {
-                html += `
-                    <div class="calendar-event next-event">
-                        <div class="event-title">${calendar.next_event.title}</div>
-                        <div class="event-time">${formatEventTime(calendar.next_event)}</div>
-                        ${calendar.next_event.location ? `<div class="event-location">📍 ${calendar.next_event.location}</div>` : ''}
-                    </div>
-                `;
-            }
-            
-            // Show summary of upcoming events
-            if (calendar.today_events.length === 0 && calendar.upcoming_events.length > 1) {
-                // Show a few more upcoming events after the next event
-                const additionalEvents = calendar.upcoming_events.slice(1, 3); // Show next 2 events
-                additionalEvents.forEach(event => {
-                    html += `
-                        <div class="calendar-event" style="opacity: 0.7; font-size: 0.9em;">
-                            <div class="event-title">${event.title}</div>
-                            <div class="event-time">${formatEventDate(event)} - ${formatEventTime(event)}</div>
+                            <div class="event-title">${truncateText(event.title, 20)}</div>
+                            <div class="event-time">${formatShortTime(event)}</div>
                         </div>
                     `;
                 });
                 
-                if (calendar.upcoming_events.length > 3) {
-                    html += `
-                        <div class="calendar-summary">
-                            +${calendar.upcoming_events.length - 3} more events this week
+                html += `
                         </div>
-                    `;
-                }
+                    </div>
+                `;
             }
             
+            html += '</div>';
             content.innerHTML = html;
         }
 
@@ -954,32 +1009,15 @@
                 hour12: true
             });
             
-            // Check if this is a multi-day event
-            const daysDiff = Math.floor((end - start) / (1000 * 60 * 60 * 24));
+            const endTime = end.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
             
-            if (daysDiff > 0) {
-                // Multi-day event - show date range and daily time
-                const startDate = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                const endDate = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                
-                const endTime = end.toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: true
-                });
-                
-                // For multi-day events, show the time range that repeats each day
-                return `${startDate} - ${endDate}, Daily ${startTime} - ${endTime}`;
-            } else if (start.toDateString() === end.toDateString()) {
-                const endTime = end.toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: true
-                });
-                return `${startTime} - ${endTime}`;
-            } else {
-                return startTime;
-            }
+            // Since multi-day events are now split into daily occurrences,
+            // we just show the time range for each day
+            return `${startTime} - ${endTime}`;
         }
 
         function formatEventDate(event) {
@@ -998,6 +1036,52 @@
                     day: 'numeric'
                 });
             }
+        }
+
+        function formatDayHeader(date, isToday) {
+            if (isToday) {
+                return 'Today (' + date.toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric' 
+                }) + ')';
+            }
+            
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            if (date.toDateString() === tomorrow.toDateString()) {
+                return 'Tomorrow (' + date.toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric' 
+                }) + ')';
+            }
+            
+            return date.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength - 3) + '...';
+        }
+
+        function formatShortTime(event) {
+            if (event.is_all_day) {
+                return 'All day';
+            }
+            
+            const start = new Date(event.start_time);
+            return start.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
         }
 
         // Carousel Functions
