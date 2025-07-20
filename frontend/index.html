@@ -21,18 +21,38 @@
         }
 
         .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            grid-template-rows: auto 1fr auto;
-            gap: 15px;
-            padding: 15px;
+            display: flex;
+            flex-direction: column;
             height: 100vh;
+            overflow: hidden;
+        }
+
+        .carousel-container {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .carousel {
+            display: flex;
+            width: 500%;
+            height: 100%;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .page {
+            width: 20%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
         }
 
         .header {
-            grid-column: 1 / -1;
             text-align: center;
             padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
         }
 
         .time-display {
@@ -50,13 +70,12 @@
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border-radius: 15px;
-            padding: 20px;
+            padding: 30px;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.2s ease;
-        }
-
-        .widget:hover {
-            transform: translateY(-2px);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin: 10px;
         }
 
         .widget h3 {
@@ -158,9 +177,6 @@
         }
 
         /* Calendar Widget */
-        .calendar-widget {
-            grid-column: 1;
-        }
 
         .calendar-event {
             background: rgba(255, 255, 255, 0.1);
@@ -208,11 +224,38 @@
             opacity: 0.7;
         }
 
-        /* Phase 2 Widgets */
-        .photos-widget {
-            grid-column: 1;
-            position: relative;
-            overflow: hidden;
+        /* Navigation Dots */
+        .navigation {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-dot.active {
+            background: rgba(255, 255, 255, 0.8);
+            transform: scale(1.2);
+        }
+
+        .nav-dot:hover {
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Widget Content Styling */
+        .widget-content {
+            flex: 1;
+            overflow-y: auto;
         }
 
         .photo-slideshow {
@@ -380,82 +423,102 @@
             <div class="date-display" id="dateDisplay">Loading...</div>
         </div>
 
-        <!-- Family Selector -->
-        <div class="widget family-selector">
-            <h3>👨‍👩‍👧‍👦 Family Members</h3>
-            <div id="familyMembers">
-                <button class="family-member touch-feedback" data-user-id="1">Dave</button>
-                <button class="family-member touch-feedback" data-user-id="3">Ashley</button>
-                <button class="family-member touch-feedback" data-user-id="4">Charlotte</button>
-                <button class="family-member touch-feedback" data-user-id="6">Daisy</button>
-            </div>
-        </div>
+        <!-- Carousel Container -->
+        <div class="carousel-container">
+            <div class="carousel" id="carousel">
+                <!-- Page 1: Family & Todos -->
+                <div class="page">
+                    <div class="widget family-selector">
+                        <h3>👨‍👩‍👧‍👦 Family Members</h3>
+                        <div id="familyMembers">
+                            <button class="family-member touch-feedback" data-user-id="1">Dave</button>
+                            <button class="family-member touch-feedback" data-user-id="3">Ashley</button>
+                            <button class="family-member touch-feedback" data-user-id="4">Charlotte</button>
+                            <button class="family-member touch-feedback" data-user-id="6">Daisy</button>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <h4>📝 Todo List <span id="selectedUserName">Select a family member</span></h4>
+                            <input type="text" class="todo-input" id="todoInput" placeholder="Add a new todo..." style="display: none;">
+                            <div id="todoList">
+                                <div style="text-align: center; opacity: 0.7; padding: 20px;">
+                                    Select a family member to view their todos
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        <!-- Todos Widget -->
-        <div class="widget todos-widget">
-            <h3>📝 Todo List <span id="selectedUserName">Select a family member</span></h3>
-            <input type="text" class="todo-input" id="todoInput" placeholder="Add a new todo..." style="display: none;">
-            <div id="todoList">
-                <div style="text-align: center; opacity: 0.7; padding: 20px;">
-                    Select a family member to view their todos
+                <!-- Page 2: Weather -->
+                <div class="page">
+                    <div class="widget weather-widget">
+                        <h3>🌤️ Weather <span class="status-indicator status-loading" id="weatherStatus"></span></h3>
+                        <div id="weatherContent">
+                            <div class="weather-temp">--°</div>
+                            <div class="weather-condition">Loading weather...</div>
+                            <div class="weather-details">
+                                <div>Humidity: --%</div>
+                                <div>Wind: -- km/h</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 3: Calendar -->
+                <div class="page">
+                    <div class="widget calendar-widget">
+                        <h3>📅 Calendar <span class="status-indicator status-loading" id="calendarStatus"></span></h3>
+                        <div id="calendarContent">
+                            <div style="text-align: center; opacity: 0.7; padding: 20px;">
+                                Loading calendar events...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 4: Photos -->
+                <div class="page">
+                    <div class="widget photos-widget">
+                        <h3>📸 Family Photos <span class="status-indicator status-loading" id="photosStatus"></span></h3>
+                        <div class="photo-slideshow" id="photoSlideshow">
+                            <div class="slideshow-placeholder">Loading photos...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 5: Timer & Actions -->
+                <div class="page">
+                    <div class="widget timer-widget">
+                        <h3>⏰ Timer <span class="status-indicator status-loading" id="timerStatus"></span></h3>
+                        <div class="timer-display" id="timerDisplay">00:00</div>
+                        <div class="timer-controls">
+                            <button class="timer-btn primary touch-feedback" onclick="startQuickTimer(300)">5 min</button>
+                            <button class="timer-btn primary touch-feedback" onclick="startQuickTimer(600)">10 min</button>
+                            <button class="timer-btn success touch-feedback" onclick="startQuickTimer(1500)">25 min</button>
+                            <button class="timer-btn danger touch-feedback" onclick="stopCurrentTimer()">Stop</button>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <h4>🚀 Quick Actions</h4>
+                            <button class="action-btn touch-feedback" onclick="showTimerPresets()">⏲️ Timer Presets</button>
+                            <button class="action-btn touch-feedback" onclick="toggleVoiceCommands()">🎤 Voice Commands</button>
+                            <button class="action-btn touch-feedback" onclick="showWeatherInfo()">🌤️ Weather Info</button>
+                            <button class="action-btn touch-feedback" onclick="showPhotoInfo()">📸 Photo Info</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Weather Widget -->
-        <div class="widget weather-widget">
-            <h3>🌤️ Weather <span class="status-indicator status-loading" id="weatherStatus"></span></h3>
-            <div id="weatherContent">
-                <div class="weather-temp">--°</div>
-                <div class="weather-condition">Loading weather...</div>
-                <div class="weather-details">
-                    <div>Humidity: --%</div>
-                    <div>Wind: -- km/h</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Calendar Widget -->
-        <div class="widget calendar-widget">
-            <h3>📅 Calendar <span class="status-indicator status-loading" id="calendarStatus"></span></h3>
-            <div id="calendarContent">
-                <div style="text-align: center; opacity: 0.7; padding: 20px;">
-                    Loading calendar events...
-                </div>
-            </div>
-        </div>
-
-        <!-- Photo Slideshow -->
-        <div class="widget photos-widget">
-            <h3>📸 Family Photos <span class="status-indicator status-loading" id="photosStatus"></span></h3>
-            <div class="photo-slideshow" id="photoSlideshow">
-                <div class="slideshow-placeholder">Loading photos...</div>
-            </div>
-        </div>
-
-        <!-- Timer Widget -->
-        <div class="widget timer-widget">
-            <h3>⏰ Timer <span class="status-indicator status-loading" id="timerStatus"></span></h3>
-            <div class="timer-display" id="timerDisplay">00:00</div>
-            <div class="timer-controls">
-                <button class="timer-btn primary touch-feedback" onclick="startQuickTimer(300)">5 min</button>
-                <button class="timer-btn primary touch-feedback" onclick="startQuickTimer(600)">10 min</button>
-                <button class="timer-btn success touch-feedback" onclick="startQuickTimer(1500)">25 min</button>
-                <button class="timer-btn danger touch-feedback" onclick="stopCurrentTimer()">Stop</button>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="widget quick-actions">
-            <h3>🚀 Quick Actions</h3>
-            <button class="action-btn touch-feedback" onclick="showTimerPresets()">⏲️ Timer Presets</button>
-            <button class="action-btn touch-feedback" onclick="toggleVoiceCommands()">🎤 Voice Commands</button>
-            <button class="action-btn touch-feedback" onclick="showWeatherInfo()">🌤️ Weather Info</button>
-            <button class="action-btn touch-feedback" onclick="showPhotoInfo()">📸 Photo Info</button>
+        <!-- Navigation Dots -->
+        <div class="navigation">
+            <div class="nav-dot active" onclick="goToPage(0)"></div>
+            <div class="nav-dot" onclick="goToPage(1)"></div>
+            <div class="nav-dot" onclick="goToPage(2)"></div>
+            <div class="nav-dot" onclick="goToPage(3)"></div>
+            <div class="nav-dot" onclick="goToPage(4)"></div>
         </div>
 
         <!-- Footer -->
-        <div class="footer">
+        <div style="text-align: center; padding: 10px; font-size: 0.9em; opacity: 0.7; background: rgba(255, 255, 255, 0.1);">
             Pi Life Hub v2.0 | Last updated: <span id="lastUpdate">--</span>
         </div>
     </div>
@@ -467,6 +530,10 @@
         let photos = [];
         let weather = null;
         let calendar = null;
+        let currentPage = 0;
+        let startX = 0;
+        let currentX = 0;
+        let isDragging = false;
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
@@ -494,6 +561,12 @@
                     this.value = '';
                 }
             });
+
+            // Touch/swipe handling
+            const carousel = document.getElementById('carousel');
+            carousel.addEventListener('touchstart', handleTouchStart, { passive: false });
+            carousel.addEventListener('touchmove', handleTouchMove, { passive: false });
+            carousel.addEventListener('touchend', handleTouchEnd, { passive: false });
         });
 
         function updateClock() {
@@ -926,6 +999,84 @@
                 });
             }
         }
+
+        // Carousel Functions
+        function goToPage(pageIndex) {
+            if (pageIndex < 0 || pageIndex > 4) return;
+            
+            currentPage = pageIndex;
+            const carousel = document.getElementById('carousel');
+            carousel.style.transform = `translateX(-${pageIndex * 20}%)`;
+            
+            // Update navigation dots
+            document.querySelectorAll('.nav-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === pageIndex);
+            });
+        }
+
+        function nextPage() {
+            if (currentPage < 4) {
+                goToPage(currentPage + 1);
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 0) {
+                goToPage(currentPage - 1);
+            }
+        }
+
+        // Touch/Swipe Handling
+        function handleTouchStart(e) {
+            // Don't interfere with clicks on interactive elements
+            if (e.target.closest('button, input, .family-member, .todo-complete')) {
+                return;
+            }
+            
+            startX = e.touches[0].clientX;
+            currentX = startX;
+            isDragging = true;
+        }
+
+        function handleTouchMove(e) {
+            if (!isDragging) return;
+            
+            currentX = e.touches[0].clientX;
+            const diffX = currentX - startX;
+            
+            // Add some resistance at the edges
+            if ((currentPage === 0 && diffX > 0) || (currentPage === 4 && diffX < 0)) {
+                return;
+            }
+            
+            // Prevent default scrolling
+            e.preventDefault();
+        }
+
+        function handleTouchEnd(e) {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            const diffX = currentX - startX;
+            const threshold = 50; // Minimum swipe distance
+            
+            if (Math.abs(diffX) > threshold) {
+                if (diffX > 0) {
+                    prevPage(); // Swipe right -> previous page
+                } else {
+                    nextPage(); // Swipe left -> next page
+                }
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                prevPage();
+            } else if (e.key === 'ArrowRight') {
+                nextPage();
+            }
+        });
 
         // Quick action functions
         function showTimerPresets() {
