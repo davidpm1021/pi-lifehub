@@ -1,0 +1,62 @@
+{
+  "pomodoro-work": {
+    "id": "pomodoro-work",
+    "name": "Pomodoro Work",
+    "duration_seconds": 1500,
+    "timer_type": "pomodoro",
+    "description": "25-minute focused work session",
+    "sound_enabled": true,
+    "auto_restart": false,
+    "notification_message": null,
+    "icon": "\ud83c\udf45",
+    "color": "#e74c3c"
+  },
+  "pomodoro-break": {
+    "id": "pomodoro-break",
+    "name": "Short Break",
+    "duration_seconds": 300,
+    "timer_type": "countdown",
+    "description": "5-minute break",
+    "sound_enabled": true,
+    "auto_restart": false,
+    "notification_message": null,
+    "icon": "\u2615",
+    "color": "#3498db"
+  },
+  "cooking-timer": {
+    "id": "cooking-timer",
+    "name": "Cooking",
+    "duration_seconds": 600,
+    "timer_type": "countdown",
+    "description": "Kitchen timer",
+    "sound_enabled": true,
+    "auto_restart": false,
+    "notification_message": null,
+    "icon": "\ud83d\udc68\u200d\ud83c\udf73",
+    "color": "#f39c12"
+  },
+  "exercise": {
+    "id": "exercise",
+    "name": "Exercise",
+    "duration_seconds": 1800,
+    "timer_type": "countdown",
+    "description": "Workout session",
+    "sound_enabled": true,
+    "auto_restart": false,
+    "notification_message": null,
+    "icon": "\ud83d\udcaa",
+    "color": "#27ae60"
+  },
+  "meditation": {
+    "id": "meditation",
+    "name": "Meditation",
+    "duration_seconds": 600,
+    "timer_type": "countdown",
+    "description": "Mindfulness session",
+    "sound_enabled": true,
+    "auto_restart": false,
+    "notification_message": null,
+    "icon": "\ud83e\uddd8",
+    "color": "#9b59b6"
+  }
+}

@@ -5,6 +5,6 @@ psutil==5.9.6
 aiohttp==3.9.1
 Pillow==10.1.0
 
-# Voice module dependencies
-pyaudio==0.2.13
-SpeechRecognition==3.10.1
+# Voice module dependencies (install separately on Pi)
+# pyaudio==0.2.13
+# SpeechRecognition==3.10.1

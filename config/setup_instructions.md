@@ -9,8 +9,8 @@
 
 ```bash
 # Add to ~/.bashrc or /etc/environment
-export OPENWEATHER_API_KEY="your_api_key_here"
-export WEATHER_LOCATION="Your City,Country"
+export OPENWEATHER_API_KEY="922a6d6d103ceaf2883dc81cbf75bf53"
+export WEATHER_LOCATION="Medford,NJ,US"
 ```
 
 5. Test the weather API:
