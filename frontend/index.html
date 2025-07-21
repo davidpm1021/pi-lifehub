@@ -154,25 +154,131 @@
 
         /* Weather Widget */
         .weather-widget {
-            grid-column: 3;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .weather-current {
             text-align: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 15px;
         }
 
         .weather-temp {
-            font-size: 2.5em;
+            font-size: 2.2em;
             font-weight: bold;
-            margin: 10px 0;
+            margin: 5px 0;
         }
 
         .weather-condition {
-            font-size: 1.2em;
-            margin-bottom: 10px;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            opacity: 0.9;
         }
 
         .weather-details {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 8px;
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+
+        .weather-forecast {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .forecast-section-title {
+            font-size: 0.9em;
+            font-weight: bold;
+            margin: 10px 0 8px 0;
+            opacity: 0.9;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 4px;
+        }
+
+        .forecast-day {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            margin: 3px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            font-size: 0.8em;
+        }
+
+        .forecast-day:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .forecast-day-name {
+            font-weight: bold;
+            min-width: 45px;
+        }
+
+        .forecast-condition {
+            flex: 1;
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        .forecast-temps {
+            display: flex;
+            gap: 8px;
+            min-width: 70px;
+            justify-content: flex-end;
+        }
+
+        .forecast-high {
+            font-weight: bold;
+        }
+
+        .forecast-low {
+            opacity: 0.7;
+        }
+
+        .hourly-forecast {
+            margin-top: 10px;
+        }
+
+        .hourly-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 5px 0;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .hourly-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hourly-item {
+            min-width: 60px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 0.7em;
+        }
+
+        .hourly-time {
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .hourly-temp {
+            font-weight: bold;
+            margin: 2px 0;
+        }
+
+        .hourly-condition {
+            opacity: 0.7;
             font-size: 0.9em;
         }
 
@@ -301,27 +407,79 @@
             overflow-y: auto;
         }
 
+        .photos-widget {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
         .photo-slideshow {
+            flex: 1;
             width: 100%;
-            height: 200px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
             transition: opacity 0.5s ease-in-out;
+            overflow: hidden;
+            margin: 10px 0;
         }
 
         .slideshow-image {
             max-width: 100%;
             max-height: 100%;
-            border-radius: 8px;
+            object-fit: contain;
+            border-radius: 15px;
         }
 
         .slideshow-placeholder {
-            font-size: 1.1em;
+            font-size: 1.5em;
             opacity: 0.7;
+            text-align: center;
+        }
+
+        .photo-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .photo-counter {
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 15px;
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            font-size: 0.8em;
+        }
+
+        .photo-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+            padding-top: 10px;
+        }
+
+        .photo-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+        }
+
+        .photo-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .timer-widget {
@@ -495,12 +653,33 @@
                 <div class="page">
                     <div class="widget weather-widget">
                         <h3>🌤️ Weather <span class="status-indicator status-loading" id="weatherStatus"></span></h3>
-                        <div id="weatherContent">
-                            <div class="weather-temp">--°</div>
-                            <div class="weather-condition">Loading weather...</div>
-                            <div class="weather-details">
+                        
+                        <!-- Current Weather -->
+                        <div class="weather-current" id="weatherCurrent">
+                            <div class="weather-temp" id="weatherTemp">--°</div>
+                            <div class="weather-condition" id="weatherCondition">Loading weather...</div>
+                            <div class="weather-details" id="weatherDetails">
                                 <div>Humidity: --%</div>
-                                <div>Wind: -- km/h</div>
+                                <div>Wind: -- mph</div>
+                            </div>
+                        </div>
+
+                        <!-- Forecast Section -->
+                        <div class="weather-forecast" id="weatherForecast">
+                            <div class="forecast-section-title">5-Day Forecast</div>
+                            <div id="dailyForecast">
+                                <div style="text-align: center; opacity: 0.7; padding: 20px;">
+                                    Loading forecast...
+                                </div>
+                            </div>
+                            
+                            <div class="hourly-forecast">
+                                <div class="forecast-section-title">Today's Hourly</div>
+                                <div class="hourly-scroll" id="hourlyForecast">
+                                    <div style="text-align: center; opacity: 0.7; padding: 10px; width: 100%;">
+                                        Loading hourly...
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -524,6 +703,16 @@
                         <h3>📸 Family Photos <span class="status-indicator status-loading" id="photosStatus"></span></h3>
                         <div class="photo-slideshow" id="photoSlideshow">
                             <div class="slideshow-placeholder">Loading photos...</div>
+                            <div class="photo-counter" id="photoCounter" style="display: none;">1 of 10</div>
+                        </div>
+                        <div class="photo-info" id="photoInfo" style="display: none;">
+                            <span id="photoName">IMG_001.jpg</span>
+                            <span id="photoDate">Today</span>
+                        </div>
+                        <div class="photo-controls">
+                            <button class="photo-btn touch-feedback" onclick="prevPhoto()">⬅️ Previous</button>
+                            <button class="photo-btn touch-feedback" onclick="toggleSlideshow()" id="playPauseBtn">⏸️ Pause</button>
+                            <button class="photo-btn touch-feedback" onclick="nextPhoto()">Next ➡️</button>
                         </div>
                     </div>
                 </div>
@@ -572,11 +761,14 @@
         let currentPhoto = 0;
         let photos = [];
         let weather = null;
+        let forecast = null;
         let calendar = null;
         let currentPage = 0;
         let startX = 0;
         let currentX = 0;
         let isDragging = false;
+        let slideshowInterval = null;
+        let slideshowPlaying = true;
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
@@ -586,6 +778,7 @@
             
             // Initial data load
             loadWeather();
+            loadForecast();
             loadPhotos();
             loadCalendar();
             checkTimerStatus();
@@ -719,25 +912,27 @@
         function updateWeatherDisplay() {
             if (!weather) return;
             
-            document.getElementById('weatherContent').innerHTML = `
-                <div class="weather-temp">${Math.round(weather.temperature.current)}°${weather.temperature.unit}</div>
-                <div class="weather-condition">${weather.condition.description}</div>
-                <div class="weather-details">
-                    <div>Humidity: ${weather.humidity}%</div>
-                    <div>Wind: ${Math.round(weather.wind_speed * 2.237)} mph</div>
-                </div>
+            // Update current weather
+            document.getElementById('weatherTemp').textContent = `${Math.round(weather.temperature.current)}°${weather.temperature.unit}`;
+            document.getElementById('weatherCondition').textContent = weather.condition.description;
+            document.getElementById('weatherDetails').innerHTML = `
+                <div>Humidity: ${weather.humidity}%</div>
+                <div>Wind: ${Math.round(weather.wind_speed * 2.237)} mph</div>
+                <div>Feels like: ${Math.round(weather.temperature.feels_like)}°</div>
+                <div>Pressure: ${weather.pressure} hPa</div>
             `;
         }
 
         async function loadPhotos() {
             try {
-                const response = await fetch('/api/photos/slideshow?limit=20');
+                const response = await fetch('/api/photos/slideshow?limit=50');
                 if (response.ok) {
                     photos = await response.json();
                     if (photos.length > 0) {
                         showCurrentPhoto();
-                        setInterval(nextPhoto, 5000); // Change every 5 seconds for smoother scrolling
+                        startSlideshow();
                         document.getElementById('photosStatus').className = 'status-indicator status-online';
+                        updatePhotoInfo();
                     } else {
                         document.getElementById('photoSlideshow').innerHTML = '<div class="slideshow-placeholder">No photos found<br>Add photos to ~/Pictures</div>';
                         document.getElementById('photosStatus').className = 'status-indicator status-offline';
@@ -760,7 +955,7 @@
             
             // Create new image element
             const newImg = document.createElement('img');
-            newImg.src = `/api/photos/image/${photo.id}?size=medium`;
+            newImg.src = `/api/photos/image/${photo.id}?size=large`;
             newImg.alt = photo.filename;
             newImg.className = 'slideshow-image';
             newImg.style.opacity = '0';
@@ -772,11 +967,14 @@
                 slideshow.style.opacity = '0';
                 
                 setTimeout(() => {
-                    // Replace content and fade in
+                    // Clear existing content but preserve counter
+                    const counter = slideshow.querySelector('.photo-counter');
                     slideshow.innerHTML = '';
                     slideshow.appendChild(newImg);
+                    if (counter) slideshow.appendChild(counter);
                     slideshow.style.opacity = '1';
                     newImg.style.opacity = '1';
+                    updatePhotoInfo();
                 }, 250);
             };
             
@@ -788,10 +986,81 @@
             };
         }
 
+        function updatePhotoInfo() {
+            if (photos.length === 0) return;
+            
+            const photo = photos[currentPhoto];
+            const counter = document.getElementById('photoCounter');
+            const info = document.getElementById('photoInfo');
+            const nameSpan = document.getElementById('photoName');
+            const dateSpan = document.getElementById('photoDate');
+            
+            // Update counter
+            counter.textContent = `${currentPhoto + 1} of ${photos.length}`;
+            counter.style.display = 'block';
+            
+            // Update info
+            nameSpan.textContent = photo.filename;
+            
+            // Format date
+            if (photo.date_taken) {
+                const photoDate = new Date(photo.date_taken);
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                
+                if (photoDate.toDateString() === today.toDateString()) {
+                    dateSpan.textContent = 'Today';
+                } else if (photoDate.toDateString() === yesterday.toDateString()) {
+                    dateSpan.textContent = 'Yesterday';
+                } else {
+                    dateSpan.textContent = photoDate.toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric',
+                        year: photoDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+                    });
+                }
+            } else {
+                dateSpan.textContent = 'Unknown date';
+            }
+            
+            info.style.display = 'flex';
+        }
+
         function nextPhoto() {
             if (photos.length === 0) return;
             currentPhoto = (currentPhoto + 1) % photos.length;
             showCurrentPhoto();
+        }
+
+        function prevPhoto() {
+            if (photos.length === 0) return;
+            currentPhoto = (currentPhoto - 1 + photos.length) % photos.length;
+            showCurrentPhoto();
+        }
+
+        function startSlideshow() {
+            if (slideshowInterval) clearInterval(slideshowInterval);
+            slideshowInterval = setInterval(nextPhoto, 7000); // Change every 7 seconds
+            slideshowPlaying = true;
+            document.getElementById('playPauseBtn').textContent = '⏸️ Pause';
+        }
+
+        function stopSlideshow() {
+            if (slideshowInterval) {
+                clearInterval(slideshowInterval);
+                slideshowInterval = null;
+            }
+            slideshowPlaying = false;
+            document.getElementById('playPauseBtn').textContent = '▶️ Play';
+        }
+
+        function toggleSlideshow() {
+            if (slideshowPlaying) {
+                stopSlideshow();
+            } else {
+                startSlideshow();
+            }
         }
 
         async function startQuickTimer(seconds) {
@@ -888,8 +1157,81 @@
 
         function updateData() {
             loadWeather();
+            loadForecast();
             loadCalendar();
             document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+        }
+
+        async function loadForecast() {
+            try {
+                const response = await fetch('/api/weather/forecast?days=5');
+                if (response.ok) {
+                    forecast = await response.json();
+                    updateForecastDisplay();
+                } else {
+                    throw new Error('Forecast API not available');
+                }
+            } catch (error) {
+                console.error('Failed to load forecast:', error);
+                document.getElementById('dailyForecast').innerHTML = `
+                    <div style="text-align: center; opacity: 0.7; padding: 10px;">
+                        Forecast unavailable
+                    </div>
+                `;
+                document.getElementById('hourlyForecast').innerHTML = `
+                    <div style="text-align: center; opacity: 0.7; padding: 10px;">
+                        Hourly unavailable
+                    </div>
+                `;
+            }
+        }
+
+        function updateForecastDisplay() {
+            if (!forecast || !forecast.daily_summaries) return;
+
+            // Update daily forecast
+            const dailyHtml = forecast.daily_summaries.map(day => {
+                const dayName = day.date === new Date().toISOString().split('T')[0] ? 'Today' : 
+                               new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' });
+                
+                return `
+                    <div class="forecast-day">
+                        <div class="forecast-day-name">${dayName}</div>
+                        <div class="forecast-condition">${day.condition}</div>
+                        <div class="forecast-temps">
+                            <span class="forecast-high">${Math.round(day.temp_max)}°</span>
+                            <span class="forecast-low">${Math.round(day.temp_min)}°</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('dailyForecast').innerHTML = dailyHtml;
+
+            // Update hourly forecast (today only)
+            if (forecast.hourly_forecasts) {
+                const today = new Date().toISOString().split('T')[0];
+                const todayHourly = forecast.hourly_forecasts
+                    .filter(hour => hour.date === today)
+                    .slice(0, 8); // Next 8 hours
+
+                const hourlyHtml = todayHourly.map(hour => {
+                    const time = new Date(hour.datetime).toLocaleTimeString('en-US', { 
+                        hour: 'numeric', 
+                        hour12: true 
+                    });
+                    
+                    return `
+                        <div class="hourly-item">
+                            <div class="hourly-time">${time}</div>
+                            <div class="hourly-temp">${Math.round(hour.temperature)}°</div>
+                            <div class="hourly-condition">${hour.condition}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                document.getElementById('hourlyForecast').innerHTML = hourlyHtml;
+            }
         }
 
         async function loadCalendar() {

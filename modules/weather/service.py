@@ -48,10 +48,103 @@ class WeatherService:
             # Return cached data if available, even if stale
             if self.cached_weather:
                 logger.warning("Returning stale cached weather data due to error")
-                return self.cached_weather
+                
+    async def get_forecast(self, days: int = 5) -> Dict[str, Any]:
+        """Get weather forecast data."""
+        try:
+            url = "http://api.openweathermap.org/data/2.5/forecast"
+            # Use specific coordinates for Medford, NJ to avoid confusion with Medford, OR
+            params = {
+                'lat': 39.9009,
+                'lon': -74.8234,
+                'appid': self.config.api_key,
+                'units': self.config.units,
+                'cnt': min(days * 8, 40)  # 8 forecasts per day (3-hour intervals), max 40
+            }
             
-            # Return fallback weather data
-            return self._get_fallback_weather()
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, params=params) as response:
+                    if response.status == 401:
+                        raise ValueError("Invalid API key")
+                    elif response.status == 404:
+                        raise ValueError(f"Location '{self.config.location}' not found")
+                    elif response.status != 200:
+                        raise ValueError(f"Forecast API request failed with status {response.status}")
+                    
+                    data = await response.json()
+                    return self._parse_forecast_data(data)
+                    
+        except Exception as e:
+            logger.error(f"Failed to get forecast data: {e}")
+            return {"error": str(e), "forecasts": []}
+    
+    def _parse_forecast_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Parse OpenWeatherMap forecast API response."""
+        try:
+            forecasts = []
+            daily_forecasts = {}
+            
+            for item in data["list"]:
+                # Parse each 3-hour forecast item
+                dt = datetime.fromtimestamp(item["dt"])
+                date_key = dt.strftime("%Y-%m-%d")
+                
+                forecast_item = {
+                    "datetime": dt.isoformat(),
+                    "date": date_key,
+                    "time": dt.strftime("%H:%M"),
+                    "temperature": round(item["main"]["temp"], 1),
+                    "feels_like": round(item["main"]["feels_like"], 1),
+                    "humidity": item["main"]["humidity"],
+                    "condition": item["weather"][0]["main"],
+                    "description": item["weather"][0]["description"].title(),
+                    "icon": item["weather"][0]["icon"],
+                    "wind_speed": item.get("wind", {}).get("speed", 0),
+                    "precipitation": item.get("rain", {}).get("3h", 0) + item.get("snow", {}).get("3h", 0)
+                }
+                
+                forecasts.append(forecast_item)
+                
+                # Group by day for daily summaries
+                if date_key not in daily_forecasts:
+                    daily_forecasts[date_key] = {
+                        "date": date_key,
+                        "day_name": dt.strftime("%A"),
+                        "temps": [],
+                        "conditions": [],
+                        "precipitation": 0,
+                        "humidity": []
+                    }
+                
+                daily_forecasts[date_key]["temps"].append(item["main"]["temp"])
+                daily_forecasts[date_key]["conditions"].append(item["weather"][0]["main"])
+                daily_forecasts[date_key]["precipitation"] += forecast_item["precipitation"]
+                daily_forecasts[date_key]["humidity"].append(item["main"]["humidity"])
+            
+            # Calculate daily summaries
+            daily_summaries = []
+            for date_key, day_data in daily_forecasts.items():
+                daily_summary = {
+                    "date": date_key,
+                    "day_name": day_data["day_name"],
+                    "temp_min": round(min(day_data["temps"]), 1),
+                    "temp_max": round(max(day_data["temps"]), 1),
+                    "condition": max(set(day_data["conditions"]), key=day_data["conditions"].count),
+                    "precipitation": round(day_data["precipitation"], 1),
+                    "avg_humidity": round(sum(day_data["humidity"]) / len(day_data["humidity"]), 1)
+                }
+                daily_summaries.append(daily_summary)
+            
+            return {
+                "location": f"{data['city']['name']}, {data['city']['country']}",
+                "hourly_forecasts": forecasts,
+                "daily_summaries": daily_summaries[:5],  # Limit to 5 days
+                "updated": datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to parse forecast data: {e}")
+            return {"error": str(e), "forecasts": []}
     
     async def _fetch_weather_data(self) -> WeatherResponse:
         """Fetch weather data from OpenWeatherMap API."""
@@ -59,8 +152,10 @@ class WeatherService:
             raise ValueError("OpenWeatherMap API key not configured")
         
         url = "https://api.openweathermap.org/data/2.5/weather"
+        # Use specific coordinates for Medford, NJ to avoid confusion with Medford, OR
         params = {
-            "q": self.config.location,
+            "lat": 39.9009,
+            "lon": -74.8234,
             "appid": self.config.api_key,
             "units": self.config.units
         }
@@ -148,14 +243,6 @@ class WeatherService:
         cache_age = datetime.now() - self.last_update
         return cache_age.total_seconds() < self.config.update_interval
     
-    async def get_forecast(self, days: int = 3) -> Dict[str, Any]:
-        """Get weather forecast (placeholder - would need forecast API)."""
-        # This would implement 5-day forecast from OpenWeatherMap
-        return {
-            "forecast": [],
-            "message": "Forecast feature coming soon",
-            "days_requested": days
-        }
     
     def get_config(self) -> WeatherConfig:
         """Get current weather configuration."""
