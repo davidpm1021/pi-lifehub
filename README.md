@@ -43,15 +43,39 @@ nano .env
 # SECRET_KEY=automatically_generated_secure_key
 ```
 
-### 3. Development via SSHFS (Optional)
+### 3. Development Workflow Setup
+
+**For development sessions, mount your Pi filesystem:**
 
 ```bash
-# Mount Pi filesystem for development
-sshfs davidpm@192.168.86.36:/home/davidpm/lifehub /home/davidpm/pi-lifehub
+# Create mount point (one-time setup)
+mkdir -p ~/pi-mount
 
-# Work in mounted directory: /home/davidpm/pi-lifehub/
-# Files are actually stored on Pi at: /home/davidpm/lifehub/
+# Mount Pi filesystem for development
+sshfs davidpm@192.168.86.36:/home/davidpm ~/pi-mount
+
+# Navigate to project
+cd ~/pi-mount/lifehub
+
+# Verify mount and check status
+pwd  # Should show: ~/pi-mount/lifehub
+git status
 ```
+
+**Environment file workflow:**
+- `.env` files are **local to each device** and **never committed**
+- Each new device needs its own `.env` configuration
+- Use `.env.example` as template
+
+```bash
+# Set up environment on new device
+cp .env.example .env
+nano .env  # Add your actual Google OAuth credentials
+./scripts/setup_security.sh
+python3 config/env_config.py  # Validate
+```
+
+📖 **[Complete Development Workflow Guide](docs/DEVELOPMENT_WORKFLOW.md)**
 
 ### 4. Pi Deployment
 
@@ -163,6 +187,41 @@ lifehub/
     └── lifehub.db             # SQLite database
 ```
 
+## 🔐 Environment Configuration FAQ
+
+### Q: Are my .env files saved when I git pull on another device?
+**A: No, .env files are local-only and never committed to Git for security.**
+
+- ✅ **What IS saved**: `.env.example` template (safe to commit)
+- ❌ **What is NOT saved**: `.env` with your actual secrets (local only)
+- 🔄 **On new devices**: Copy `.env.example` to `.env` and configure
+
+### Q: How do I set up .env on a new device?
+```bash
+# 1. Clone/pull the repository
+git pull origin main
+
+# 2. Create local environment file
+cp .env.example .env
+
+# 3. Configure with your actual credentials
+nano .env  # Add GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, etc.
+
+# 4. Run security setup
+./scripts/setup_security.sh
+
+# 5. Validate configuration
+python3 config/env_config.py
+```
+
+### Q: What happens when I work from multiple devices?
+- Each device needs its own `.env` configuration
+- Your secrets stay secure and local
+- Code changes sync via Git, but environment stays private
+- Mount your Pi via SSHFS to edit files directly on the Pi
+
+📖 **[Complete Development Workflow Guide](docs/DEVELOPMENT_WORKFLOW.md)**
+
 ## 🔧 Development
 
 ### Local Development
@@ -210,6 +269,23 @@ git check-ignore .env          # Should be ignored
 - `GET /api/calendar` - Calendar events
 - `GET /api/health` - System health check
 
+## 📚 Documentation Index
+
+### Core Documentation
+- **[README.md](README.md)** - Project overview and quick start
+- **[FEATURES.md](FEATURES.md)** - Complete feature list and specifications
+- **[docs/SECURITY.md](docs/SECURITY.md)** - Enterprise security documentation
+
+### Setup and Development
+- **[docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md)** - Complete installation guide
+- **[docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md)** - Development workflow and Pi mounting
+- **[docs/QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md)** - Quick command reference
+- **[docs/KIOSK_SETUP.md](docs/KIOSK_SETUP.md)** - Kiosk mode configuration
+
+### Module Documentation
+- **[modules/README.md](modules/README.md)** - Module architecture and development
+
+
 ## 📋 Setup Scripts
 
 - `./scripts/setup_security.sh` - Configure environment and security
@@ -222,6 +298,40 @@ git check-ignore .env          # Should be ignored
 ## 🐛 Troubleshooting
 
 ### Common Issues
+
+**Development-Specific Issues:**
+
+4. **SSHFS Mount Issues**
+   ```bash
+   # Mount becomes unresponsive
+   fusermount -u ~/pi-mount
+   sshfs davidpm@192.168.86.36:/home/davidpm ~/pi-mount
+   
+   # Permission denied mounting
+   sudo usermod -a -G fuse $USER  # Add user to fuse group
+   # Then logout and login again
+   ```
+
+5. **Environment File Missing After Git Pull**
+   ```bash
+   # This is normal! .env files are local-only
+   cp .env.example .env
+   nano .env  # Configure your credentials
+   ./scripts/setup_security.sh
+   python3 config/env_config.py  # Validate
+   ```
+
+6. **Different Behavior on Pi vs Development Machine**
+   ```bash
+   # Check if you're editing the right files
+   pwd  # Should show ~/pi-mount/lifehub
+   
+   # Verify mount is working
+   ls -la  # Should show Pi files, not local files
+   
+   # Test direct Pi access
+   ssh davidpm@192.168.86.36 "cd lifehub && git status"
+   ```
 
 1. **OAuth Authentication Fails**
    ```bash
