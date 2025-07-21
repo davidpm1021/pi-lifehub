@@ -109,3 +109,6 @@ coverage.xml
 .mypy_cache/
 .dmypy.json
 dmypy.json
+# OAuth credentials
+modules/calendar/credentials.json
+modules/calendar/token.json

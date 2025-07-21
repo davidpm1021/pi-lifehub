@@ -48,7 +48,7 @@ Type=simple
 User=pi
 WorkingDirectory=/home/pi/pi-lifehub
 Environment=PATH=/home/pi/pi-lifehub/venv/bin
-ExecStart=/home/pi/pi-lifehub/venv/bin/python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000
+ExecStart=/home/pi/pi-lifehub/venv/bin/python -m uvicorn backend.main:app --host 0.0.0.0 --port 8001
 Restart=always
 RestartSec=3
 
@@ -70,7 +70,7 @@ tee /home/pi/.config/autostart/lifehub-kiosk.desktop > /dev/null << EOF
 [Desktop Entry]
 Type=Application
 Name=Life Hub Kiosk
-Exec=/usr/bin/chromium-browser --kiosk --no-sandbox --disable-infobars --disable-extensions --disable-plugins --disable-web-security --disable-features=TranslateUI --disable-ipc-flooding-protection http://localhost:8000
+Exec=/usr/bin/chromium-browser --kiosk --no-sandbox --disable-infobars --disable-extensions --disable-plugins --disable-web-security --disable-features=TranslateUI --disable-ipc-flooding-protection --disable-dev-shm-usage --no-first-run --disable-default-apps --disable-sync http://localhost:8001
 Hidden=false
 NoDisplay=false
 X-GNOME-Autostart-enabled=true
@@ -139,7 +139,7 @@ else
 fi
 
 # Check if backend responds
-if curl -s http://localhost:8000/api/time > /dev/null; then
+if curl -s http://localhost:8001/api/time > /dev/null; then
     echo "✅ API is responding"
 else
     echo "❌ API is not responding"
@@ -202,7 +202,7 @@ echo ""
 echo "Next steps:"
 echo "1. Reboot your Pi: sudo reboot"
 echo "2. The dashboard will auto-start in kiosk mode"
-echo "3. Access via browser at: http://[PI_IP]:8000"
+echo "3. Access via browser at: http://[PI_IP]:8001"
 echo ""
 echo "Useful commands:"
 echo "  Health check: ~/pi-lifehub/scripts/health_check.sh"
