@@ -1,3 +1,7 @@
+# Import secure configuration
+from config.env_config import Config
+from modules.calendar.service_secure import get_calendar_service
+
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
